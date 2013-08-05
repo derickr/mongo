@@ -283,6 +283,7 @@ namespace mongo {
         {"$ne", ExpressionCompare::createNe, OpDesc::FIXED_COUNT, 2},
         {"$not", ExpressionNot::create, OpDesc::FIXED_COUNT, 1},
         {"$or", ExpressionOr::create, 0},
+        {"$round", ExpressionRound::create, OpDesc::FIXED_COUNT, 1},
         {"$second", ExpressionSecond::create, OpDesc::FIXED_COUNT, 1},
         {"$strcasecmp", ExpressionStrcasecmp::create, OpDesc::FIXED_COUNT, 2},
         {"$substr", ExpressionSubstr::create, OpDesc::FIXED_COUNT, 3},
@@ -2539,6 +2540,48 @@ namespace mongo {
 
     const char *ExpressionOr::getOpName() const {
         return "$or";
+    }
+
+    /* ----------------------- ExpressionRound ---------------------------- */
+
+    ExpressionRound::~ExpressionRound() {
+    }
+
+    intrusive_ptr<ExpressionNary> ExpressionRound::create() {
+        intrusive_ptr<ExpressionRound> pExpression(new ExpressionRound());
+        return pExpression;
+    }
+
+    ExpressionRound::ExpressionRound():
+        ExpressionNary() {
+    }
+
+    void ExpressionRound::addOperand(const intrusive_ptr<Expression> &pExpression) {
+        checkArgLimit(1);
+
+        ExpressionNary::addOperand(pExpression);
+    }
+
+    Value ExpressionRound::evaluateInternal(const Variables& vars) const {
+        checkArgCount(1);
+        Value nr = vpOperand[0]->evaluateInternal(vars);
+
+        if (nr.numeric()) {
+            double number = nr.coerceToDouble();
+
+            return Value(round(number));
+        }
+        else if (nr.nullish()) {
+            return Value(BSONNULL);
+        }
+        else {
+            uasserted(17008, str::stream() << "$round only supports a numeric types, not "
+                                           << typeName(nr.getType()));
+        }
+    }
+
+    const char *ExpressionRound::getOpName() const {
+        return "$round";
     }
 
     /* ------------------------- ExpressionSecond ----------------------------- */
