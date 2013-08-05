@@ -283,6 +283,7 @@ namespace mongo {
         {"$ne", ExpressionCompare::createNe, OpDesc::FIXED_COUNT, 2},
         {"$not", ExpressionNot::create, OpDesc::FIXED_COUNT, 1},
         {"$or", ExpressionOr::create, 0},
+        {"$pow", ExpressionPow::create, OpDesc::FIXED_COUNT, 2},
         {"$round", ExpressionRound::create, OpDesc::FIXED_COUNT, 1},
         {"$second", ExpressionSecond::create, OpDesc::FIXED_COUNT, 1},
         {"$sqrt", ExpressionSqrt::create, OpDesc::FIXED_COUNT, 1},
@@ -2541,6 +2542,49 @@ namespace mongo {
 
     const char *ExpressionOr::getOpName() const {
         return "$or";
+    }
+
+    /* ----------------------- ExpressionPow ---------------------------- */
+
+    ExpressionPow::~ExpressionPow() {
+    }
+
+    intrusive_ptr<ExpressionNary> ExpressionPow::create() {
+        intrusive_ptr<ExpressionPow> pExpression(new ExpressionPow());
+        return pExpression;
+    }
+
+    ExpressionPow::ExpressionPow():
+        ExpressionNary() {
+    }
+
+    void ExpressionPow::addOperand(
+        const intrusive_ptr<Expression> &pExpression) {
+        checkArgLimit(2);
+        ExpressionNary::addOperand(pExpression);
+    }
+
+    Value ExpressionPow::evaluateInternal(const Variables& vars) const {
+        checkArgCount(2);
+        Value lhs = vpOperand[0]->evaluateInternal(vars);
+        Value rhs = vpOperand[1]->evaluateInternal(vars);
+
+		if (lhs.numeric() && rhs.numeric()) {
+			double base = lhs.coerceToDouble();
+			double exp  = rhs.coerceToDouble();
+
+			return Value(pow(base, exp));
+		}
+		else {
+            uasserted(17010, str::stream() << "cant raise a "
+                                           << typeName(rhs.getType())
+                                           << " to a "
+                                           << typeName(lhs.getType()));
+		}
+    }
+
+    const char *ExpressionPow::getOpName() const {
+        return "$pow";
     }
 
     /* ----------------------- ExpressionRound ---------------------------- */

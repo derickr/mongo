@@ -980,6 +980,22 @@ namespace mongo {
     };
 
 
+    class ExpressionPow :
+        public ExpressionNary {
+    public:
+        // virtuals from ExpressionNary
+        virtual ~ExpressionPow();
+        virtual Value evaluateInternal(const Variables& vars) const;
+        virtual const char *getOpName() const;
+        virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
+
+        static intrusive_ptr<ExpressionNary> create();
+
+    private:
+        ExpressionPow();
+    };
+
+
     class ExpressionRound :
         public ExpressionNary {
     public:
