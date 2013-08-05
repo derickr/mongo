@@ -285,6 +285,7 @@ namespace mongo {
         {"$or", ExpressionOr::create, 0},
         {"$round", ExpressionRound::create, OpDesc::FIXED_COUNT, 1},
         {"$second", ExpressionSecond::create, OpDesc::FIXED_COUNT, 1},
+        {"$sqrt", ExpressionSqrt::create, OpDesc::FIXED_COUNT, 1},
         {"$strcasecmp", ExpressionStrcasecmp::create, OpDesc::FIXED_COUNT, 2},
         {"$substr", ExpressionSubstr::create, OpDesc::FIXED_COUNT, 3},
         {"$subtract", ExpressionSubtract::create, OpDesc::FIXED_COUNT, 2},
@@ -2614,6 +2615,47 @@ namespace mongo {
         return "$second";
     }
 
+    /* ----------------------- ExpressionSqrt ---------------------------- */
+
+    ExpressionSqrt::~ExpressionSqrt() {
+    }
+
+    intrusive_ptr<ExpressionNary> ExpressionSqrt::create() {
+        intrusive_ptr<ExpressionSqrt> pExpression(new ExpressionSqrt());
+        return pExpression;
+    }
+
+    ExpressionSqrt::ExpressionSqrt():
+        ExpressionNary() {
+    }
+
+    void ExpressionSqrt::addOperand(const intrusive_ptr<Expression> &pExpression) {
+        checkArgLimit(1);
+
+        ExpressionNary::addOperand(pExpression);
+    }
+
+    Value ExpressionSqrt::evaluateInternal(const Variables& vars) const {
+        checkArgCount(1);
+        Value nr = vpOperand[0]->evaluateInternal(vars);
+
+        if (nr.numeric()) {
+            double numer = nr.coerceToDouble();
+
+            return Value(sqrt(numer));
+        }
+        else if (nr.nullish()) {
+            return Value(BSONNULL);
+        }
+        else {
+            uasserted(17007, str::stream() << "$sqrt only supports a numeric types, not "
+                                           << typeName(nr.getType()));
+        }
+    }
+
+    const char *ExpressionSqrt::getOpName() const {
+        return "$sqrt";
+    }
     /* ----------------------- ExpressionStrcasecmp ---------------------------- */
 
     ExpressionStrcasecmp::~ExpressionStrcasecmp() {

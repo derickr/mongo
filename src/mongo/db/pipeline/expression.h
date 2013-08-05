@@ -1012,6 +1012,21 @@ namespace mongo {
     };
 
 
+    class ExpressionSqrt :
+        public ExpressionNary {
+    public:
+        // virtuals from ExpressionNary
+        virtual ~ExpressionSqrt();
+        virtual Value evaluateInternal(const Variables& vars) const;
+        virtual const char *getOpName() const;
+        virtual void addOperand(const intrusive_ptr<Expression> &pExpression);
+
+        static intrusive_ptr<ExpressionNary> create();
+
+    private:
+        ExpressionSqrt();
+    };
+
     class ExpressionStrcasecmp :
         public ExpressionNary {
     public:
