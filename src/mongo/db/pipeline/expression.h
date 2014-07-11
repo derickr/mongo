@@ -495,7 +495,7 @@ namespace mongo {
     };
 
 
-    class ExpressionDayOfMonth : public ExpressionFixedArity<ExpressionDayOfMonth, 1> {
+    class ExpressionLocalTime : public ExpressionFixedArity<ExpressionLocalTime, 1> {
     public:
         // virtuals from ExpressionNary
         virtual Value evaluateInternal(Variables* vars) const;
@@ -503,7 +503,7 @@ namespace mongo {
     };
 
 
-    class ExpressionDayOfWeek : public ExpressionFixedArity<ExpressionDayOfWeek, 1> {
+    class ExpressionDayOfMonth : public ExpressionVariadic<ExpressionDayOfMonth> {
     public:
         // virtuals from ExpressionNary
         virtual Value evaluateInternal(Variables* vars) const;
@@ -511,7 +511,15 @@ namespace mongo {
     };
 
 
-    class ExpressionDayOfYear : public ExpressionFixedArity<ExpressionDayOfYear, 1> {
+    class ExpressionDayOfWeek : public ExpressionVariadic<ExpressionDayOfWeek> {
+    public:
+        // virtuals from ExpressionNary
+        virtual Value evaluateInternal(Variables* vars) const;
+        virtual const char *getOpName() const;
+    };
+
+
+    class ExpressionDayOfYear : public ExpressionVariadic<ExpressionDayOfYear> {
     public:
         // virtuals from ExpressionNary
         virtual Value evaluateInternal(Variables* vars) const;
@@ -583,7 +591,7 @@ namespace mongo {
     };
 
 
-    class ExpressionHour : public ExpressionFixedArity<ExpressionHour, 1> {
+    class ExpressionHour : public ExpressionVariadic<ExpressionHour> {
     public:
         // virtuals from ExpressionNary
         virtual Value evaluateInternal(Variables* vars) const;
@@ -676,7 +684,7 @@ namespace mongo {
     };
 
 
-    class ExpressionMinute : public ExpressionFixedArity<ExpressionMinute, 1> {
+    class ExpressionMinute : public ExpressionVariadic<ExpressionMinute> {
     public:
         // virtuals from ExpressionNary
         virtual Value evaluateInternal(Variables* vars) const;
@@ -701,7 +709,7 @@ namespace mongo {
     };
 
 
-    class ExpressionMonth : public ExpressionFixedArity<ExpressionMonth, 1> {
+    class ExpressionMonth : public ExpressionVariadic<ExpressionMonth> {
     public:
         // virtuals from ExpressionNary
         virtual Value evaluateInternal(Variables* vars) const;
@@ -837,7 +845,7 @@ namespace mongo {
     };
 
 
-    class ExpressionSecond : public ExpressionFixedArity<ExpressionSecond, 1> {
+    class ExpressionSecond : public ExpressionVariadic<ExpressionSecond> {
     public:
         // virtuals from ExpressionNary
         virtual Value evaluateInternal(Variables* vars) const;
@@ -948,7 +956,7 @@ namespace mongo {
     };
 
 
-    class ExpressionYear : public ExpressionFixedArity<ExpressionYear, 1> {
+    class ExpressionYear : public ExpressionVariadic<ExpressionYear> {
     public:
         // virtuals from ExpressionNary
         virtual Value evaluateInternal(Variables* vars) const;

@@ -5,8 +5,10 @@ Import("env use_system_version_of_library windows darwin usev8 v8suffix solaris 
 env.SConscript( [
         "murmurhash3/SConscript",
         "s2/SConscript",
+        "timelib/SConscript",
         ] )
 env.Append(CPPPATH='$BUILD_DIR/third_party/s2')
+env.Append(CPPPATH='$BUILD_DIR/third_party/timelib')
 
 if use_system_version_of_library("pcre"):
     env.Library( "shim_pcrecpp", ['shim_pcrecpp.cc'],

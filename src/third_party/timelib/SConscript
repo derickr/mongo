@@ -1,0 +1,24 @@
+# -*- mode: python -*-
+
+Import("env windows linux darwin solaris use_clang")
+
+env = env.Clone()
+
+env.Append(CCFLAGS=['-Isrc/third_party/timelib'])
+env.Append(CCFLAGS=['-DHAVE_STDLIB_H'])
+env.Append(CCFLAGS=['-DHAVE_STRING_H'])
+env.Append(CCFLAGS=['-DHAVE_STRINGS_H'])
+env.Append(CCFLAGS=['-D_GNU_SOURCE'])
+
+env.Library( "timelib",
+    [ 
+	"astro.c",
+	"dow.c",
+	"interval.c",
+	"parse_date.c",
+	"parse_iso_intervals.c",
+	"parse_tz.c",
+	"timelib.c",
+	"tm2unixtime.c",
+	"unixtime2tm.c",
+    ])

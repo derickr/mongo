@@ -395,6 +395,7 @@ env.Library('mongocommon', commonFiles,
                      'version',
                      '$BUILD_DIR/third_party/shim_pcrecpp',
                      '$BUILD_DIR/third_party/murmurhash3/murmurhash3',
+                     '$BUILD_DIR/third_party/timelib/timelib',
                      '$BUILD_DIR/third_party/shim_boost',
                      '$BUILD_DIR/mongo/util/options_parser/options_parser',
                      ] +

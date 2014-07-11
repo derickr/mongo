@@ -43,12 +43,45 @@
 #include "mongo/util/string_map.h"
 #include "mongo/util/mongoutils/str.h"
 
+extern "C" {
+#include "third_party/timelib/timelib.h"
+}
+
 namespace mongo {
     using namespace mongoutils;
 
     /// Helper function to easily wrap constants with $const.
     static Value serializeConstant(Value val) {
         return Value(DOC("$const" << val));
+    }
+
+    /// Helper functions for timezone madness
+    static timelib_time* createLocalTime(Value pDate, Value pTz) {
+        timelib_time *t = timelib_time_ctor();
+        timelib_tzinfo *tzi;
+        time_t unixts = pDate.coerceToTimeT();
+        string str(pTz.coerceToString());
+        char *tzn = (char*) str.c_str();
+
+        uassert(19999, str::stream() << "second argument needs to be a string, not "
+                                     << typeName(pTz.getType()),
+                pTz.getType() == String);
+
+        tzi = timelib_parse_tzfile(tzn, timelib_builtin_db());
+        uassert(19998, str::stream() << "timezone identifier could not be found: "
+                                     << pTz.coerceToString(),
+                tzi != NULL);
+
+        timelib_set_timezone(t, tzi);
+        timelib_unixtime2local(t, unixts);
+
+        return t;
+    }
+
+    static void destroyLocalTime(timelib_time *t)
+    {
+        timelib_tzinfo_dtor(t->tz_info);
+        timelib_time_dtor(t);
     }
 
     void Variables::uassertValidNameForUserWrite(StringData varName) {
@@ -799,12 +832,42 @@ namespace {
         return "$const";
     }
 
+    /* ---------------------- ExpressionLocalTime -------------------------- */
+
+    Value ExpressionLocalTime::evaluateInternal(Variables* vars) const {
+        Value pDate(vpOperand[0]->evaluateInternal(vars));
+        time_t date = pDate.coerceToTimeT();
+        return Value((long long)date);
+    }
+
+    REGISTER_EXPRESSION("$localTime", ExpressionLocalTime::parse);
+    const char *ExpressionLocalTime::getOpName() const {
+        return "$localTime";
+    }
+
     /* ---------------------- ExpressionDayOfMonth ------------------------- */
 
     Value ExpressionDayOfMonth::evaluateInternal(Variables* vars) const {
         Value pDate(vpOperand[0]->evaluateInternal(vars));
-        tm date = pDate.coerceToTm();
-        return Value(date.tm_mday);
+
+        const size_t n = vpOperand.size();
+        if (n == 1) {
+            tm date = pDate.coerceToTm();
+            return Value(date.tm_mday);
+        } else if (n == 2) {
+            Value pTz(vpOperand[1]->evaluateInternal(vars));
+            Value ret;
+            timelib_time *t = createLocalTime(pDate, pTz);
+
+            ret = Value((long long) t->d);
+            destroyLocalTime(t);
+
+            return ret;
+        } else {
+            uassert(19995, str::stream() << "$dayOfMonth only accepts one or two arguments",
+                    n > 0 && n < 2);
+            return Value(BSONNULL);
+        }
     }
 
     REGISTER_EXPRESSION("$dayOfMonth", ExpressionDayOfMonth::parse);
@@ -816,8 +879,25 @@ namespace {
 
     Value ExpressionDayOfWeek::evaluateInternal(Variables* vars) const {
         Value pDate(vpOperand[0]->evaluateInternal(vars));
-        tm date = pDate.coerceToTm();
-        return Value(date.tm_wday+1); // MySQL uses 1-7 tm uses 0-6
+
+        const size_t n = vpOperand.size();
+        if (n == 1) {
+            tm date = pDate.coerceToTm();
+            return Value(date.tm_wday+1); // MySQL uses 1-7 tm uses 0-6
+        } else if (n == 2) {
+            Value pTz(vpOperand[1]->evaluateInternal(vars));
+            Value ret;
+            timelib_time *t = createLocalTime(pDate, pTz);
+
+            ret = Value((long long) timelib_day_of_week(t->y, t->m, t->d));
+            destroyLocalTime(t);
+
+            return ret;
+        } else {
+            uassert(19994, str::stream() << "$dayOfWeek only accepts one or two arguments",
+                    n > 0 && n < 2);
+            return Value(BSONNULL);
+        }
     }
 
     REGISTER_EXPRESSION("$dayOfWeek", ExpressionDayOfWeek::parse);
@@ -829,8 +909,25 @@ namespace {
 
     Value ExpressionDayOfYear::evaluateInternal(Variables* vars) const {
         Value pDate(vpOperand[0]->evaluateInternal(vars));
-        tm date = pDate.coerceToTm();
-        return Value(date.tm_yday+1); // MySQL uses 1-366 tm uses 0-365
+
+        const size_t n = vpOperand.size();
+        if (n == 1) {
+            tm date = pDate.coerceToTm();
+            return Value(date.tm_yday+1); // MySQL uses 1-366 tm uses 0-365
+        } else if (n == 2) {
+            Value pTz(vpOperand[1]->evaluateInternal(vars));
+            Value ret;
+            timelib_time *t = createLocalTime(pDate, pTz);
+
+            ret = Value((long long) timelib_day_of_year(t->y, t->m, t->d));
+            destroyLocalTime(t);
+
+            return ret;
+        } else {
+            uassert(19993, str::stream() << "$dayOfYear only accepts one or two arguments",
+                    n > 0 && n < 2);
+            return Value(BSONNULL);
+        }
     }
 
     REGISTER_EXPRESSION("$dayOfYear", ExpressionDayOfYear::parse);
@@ -1548,8 +1645,25 @@ namespace {
 
     Value ExpressionMinute::evaluateInternal(Variables* vars) const {
         Value pDate(vpOperand[0]->evaluateInternal(vars));
-        tm date = pDate.coerceToTm();
-        return Value(date.tm_min);
+
+        const size_t n = vpOperand.size();
+        if (n == 1) {
+            tm date = pDate.coerceToTm();
+            return Value(date.tm_min);
+        } else if (n == 2) {
+            Value pTz(vpOperand[1]->evaluateInternal(vars));
+            Value ret;
+            timelib_time *t = createLocalTime(pDate, pTz);
+
+            ret = Value((long long) t->i);
+            destroyLocalTime(t);
+
+            return ret;
+        } else {
+            uassert(19991, str::stream() << "$minute only accepts one or two arguments",
+                    n > 0 && n < 2);
+            return Value(BSONNULL);
+        }
     }
 
     REGISTER_EXPRESSION("$minute", ExpressionMinute::parse);
@@ -1614,8 +1728,25 @@ namespace {
 
     Value ExpressionMonth::evaluateInternal(Variables* vars) const {
         Value pDate(vpOperand[0]->evaluateInternal(vars));
-        tm date = pDate.coerceToTm();
-        return Value(date.tm_mon + 1); // MySQL uses 1-12 tm uses 0-11
+
+        const size_t n = vpOperand.size();
+        if (n == 1) {
+            tm date = pDate.coerceToTm();
+            return Value(date.tm_mon + 1); // MySQL uses 1-12 tm uses 0-11
+        } else if (n == 2) {
+            Value pTz(vpOperand[1]->evaluateInternal(vars));
+            Value ret;
+            timelib_time *t = createLocalTime(pDate, pTz);
+
+            ret = Value((long long) t->m);
+            destroyLocalTime(t);
+
+            return ret;
+        } else {
+            uassert(19996, str::stream() << "$month only accepts one or two arguments",
+                    n > 0 && n < 2);
+            return Value(BSONNULL);
+        }
     }
 
     REGISTER_EXPRESSION("$month", ExpressionMonth::parse);
@@ -1674,8 +1805,25 @@ namespace {
 
     Value ExpressionHour::evaluateInternal(Variables* vars) const {
         Value pDate(vpOperand[0]->evaluateInternal(vars));
-        tm date = pDate.coerceToTm();
-        return Value(date.tm_hour);
+
+        const size_t n = vpOperand.size();
+        if (n == 1) {
+            tm date = pDate.coerceToTm();
+            return Value(date.tm_hour);
+        } else if (n == 2) {
+            Value pTz(vpOperand[1]->evaluateInternal(vars));
+            Value ret;
+            timelib_time *t = createLocalTime(pDate, pTz);
+
+            ret = Value((long long) t->h);
+            destroyLocalTime(t);
+
+            return ret;
+        } else {
+            uassert(19992, str::stream() << "$hour only accepts one or two arguments",
+                    n > 0 && n < 2);
+            return Value(BSONNULL);
+        }
     }
 
     REGISTER_EXPRESSION("$hour", ExpressionHour::parse);
@@ -1887,8 +2035,25 @@ namespace {
 
     Value ExpressionSecond::evaluateInternal(Variables* vars) const {
         Value pDate(vpOperand[0]->evaluateInternal(vars));
-        tm date = pDate.coerceToTm();
-        return Value(date.tm_sec);
+ 
+        const size_t n = vpOperand.size();
+        if (n == 1) {
+           tm date = pDate.coerceToTm();
+            return Value(date.tm_sec);
+        } else if (n == 2) {
+            Value pTz(vpOperand[1]->evaluateInternal(vars));
+            Value ret;
+            timelib_time *t = createLocalTime(pDate, pTz);
+
+            ret = Value((long long) t->s);
+            destroyLocalTime(t);
+
+            return ret;
+        } else {
+            uassert(19990, str::stream() << "$second only accepts one or two arguments",
+                    n > 0 && n < 2);
+            return Value(BSONNULL);
+        }
     }
 
     REGISTER_EXPRESSION("$second", ExpressionSecond::parse);
@@ -2327,8 +2492,25 @@ namespace {
 
     Value ExpressionYear::evaluateInternal(Variables* vars) const {
         Value pDate(vpOperand[0]->evaluateInternal(vars));
-        tm date = pDate.coerceToTm();
-        return Value(date.tm_year + 1900); // tm_year is years since 1900
+
+        const size_t n = vpOperand.size();
+        if (n == 1) {
+            tm date = pDate.coerceToTm();
+            return Value(date.tm_year + 1900); // tm_year is years since 1900
+        } else if (n == 2) {
+            Value pTz(vpOperand[1]->evaluateInternal(vars));
+            Value ret;
+            timelib_time *t = createLocalTime(pDate, pTz);
+
+            ret = Value((long long) t->y);
+            destroyLocalTime(t);
+
+            return ret;
+        } else {
+            uassert(19997, str::stream() << "$year only accepts one or two arguments",
+                    n > 0 && n < 2);
+            return Value(BSONNULL);
+        }
     }
 
     REGISTER_EXPRESSION("$year", ExpressionYear::parse);
