@@ -73,6 +73,8 @@ namespace mongo {
          DocumentSourceGroup::createFromBson},
         {DocumentSourceLimit::limitName,
          DocumentSourceLimit::createFromBson},
+        {DocumentSourceMapreduce::mapreduceName,
+         DocumentSourceMapreduce::createFromBson},
         {DocumentSourceMatch::matchName,
          DocumentSourceMatch::createFromBson},
         {DocumentSourceMergeCursors::name,

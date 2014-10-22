@@ -1013,6 +1013,34 @@ namespace mongo {
     };
 
 
+    class DocumentSourceMapreduce :
+        public DocumentSource {
+    public:
+        // virtuals from DocumentSource
+        virtual boost::optional<Document> getNext();
+        virtual const char *getSourceName() const;
+        virtual Value serialize(bool explain = false) const;
+
+        /**
+          Create a new projection DocumentSource from BSON.
+
+          This is a convenience for directly handling BSON, and relies on the
+          above methods.
+
+          @param pBsonElement the BSONElement with an object named $project
+          @param pExpCtx the expression context for the pipeline
+          @returns the created projection
+         */
+        static intrusive_ptr<DocumentSource> createFromBson(
+            BSONElement elem,
+            const intrusive_ptr<ExpressionContext> &pExpCtx);
+
+        static const char mapreduceName[];
+
+    private:
+        DocumentSourceMapreduce(const intrusive_ptr<ExpressionContext> &pExpCtx);
+    };
+
     class DocumentSourceUnwind :
         public DocumentSource {
     public:
