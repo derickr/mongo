@@ -18,7 +18,6 @@ tomcryptSuffix = '-1.18.0-rc2'
 
 thirdPartyIncludePathList = [
     ('s2', '#/src/third_party/s2'),
-    ('tz', '#/src/third_party/tz'),
     ('timelib', '#/src/third_party/timelib' + timelibSuffix),
 ]
 
@@ -305,22 +304,6 @@ yamlEnv.Library(
     target="shim_yaml",
     source=[
         'shim_yaml.cpp',
-    ])
-
-
-tzEnv = env.Clone()
-if env.TargetOSIs('solaris'):
-    tzEnv.InjectThirdPartyIncludePaths(libraries=['tz'])
-    tzEnv.SConscript('tz/SConscript', exports={ 'env' : tzEnv })
-    tzEnv = tzEnv.Clone(
-        LIBDEPS_INTERFACE=[
-            'tz/tz',
-        ])
-
-tzEnv.Library(
-    target='shim_tz',
-    source=[
-        'shim_tz.cpp',
     ])
 
 
