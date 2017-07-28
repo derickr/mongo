@@ -36,8 +36,8 @@
 #include "mongo/db/query/datetime/date_time_support.h"
 
 #include "mongo/base/init.h"
+#include "mongo/base/parse_number.h"
 #include "mongo/bson/util/builder.h"
-#include "mongo/db/service_context.h"
 #include "mongo/stdx/memory.h"
 #include "mongo/util/assert_util.h"
 #include "mongo/util/duration.h"
@@ -47,9 +47,6 @@
 namespace mongo {
 
 namespace {
-const auto getTimeZoneDatabase =
-    ServiceContext::declareDecoration<std::unique_ptr<TimeZoneDatabase>>();
-
 // Converts a date to a number of seconds, being careful to round appropriately for negative numbers
 // of seconds.
 long long seconds(Date_t date) {
@@ -66,16 +63,6 @@ long long seconds(Date_t date) {
 }
 
 }  // namespace
-
-const TimeZoneDatabase* TimeZoneDatabase::get(ServiceContext* serviceContext) {
-    invariant(getTimeZoneDatabase(serviceContext));
-    return getTimeZoneDatabase(serviceContext).get();
-}
-
-void TimeZoneDatabase::set(ServiceContext* serviceContext,
-                           std::unique_ptr<TimeZoneDatabase> dateTimeSupport) {
-    getTimeZoneDatabase(serviceContext) = std::move(dateTimeSupport);
-}
 
 TimeZoneDatabase::TimeZoneDatabase() {
     loadTimeZoneInfo({const_cast<timelib_tzdb*>(timelib_builtin_db()), TimeZoneDBDeleter()});

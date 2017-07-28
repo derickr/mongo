@@ -9,7 +9,8 @@ timeZoneEnv.InjectThirdPartyIncludePaths(libraries=['timelib'])
 timeZoneEnv.Library(
     target='date_time_support',
     source=[
-        'date_time_support.cpp'
+        'date_time_support.cpp',
+        'timezone_decorator.cpp'
     ],
     LIBDEPS=[
         '$BUILD_DIR/mongo/db/service_context',

@@ -44,6 +44,7 @@
 #include "mongo/db/pipeline/value.h"
 #include "mongo/db/pipeline/variables.h"
 #include "mongo/db/query/datetime/date_time_support.h"
+#include "mongo/db/query/datetime/timezone_decorator.h"
 #include "mongo/stdx/functional.h"
 #include "mongo/util/intrusive_counter.h"
 #include "mongo/util/mongoutils/str.h"
@@ -499,7 +500,7 @@ public:
                               << timeZoneId.toString()
                               << ")",
                 timeZoneId.getType() == BSONType::String);
-        auto timeZone = TimeZoneDatabase::get(getExpressionContext()->opCtx->getServiceContext())
+        auto timeZone = TimeZoneDecorator::get(getExpressionContext()->opCtx->getServiceContext())
                             ->getTimeZone(timeZoneId.getString());
         return evaluateDate(date, timeZone);
     }

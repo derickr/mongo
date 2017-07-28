@@ -1240,8 +1240,10 @@ Value ExpressionDateFromParts::evaluate(const Document& root) const {
         return Value(BSONNULL);
     }
 
-    auto timeZone = makeTimeZone(
-        TimeZoneDatabase::get(getExpressionContext()->opCtx->getServiceContext()), root, _timeZone);
+    auto timeZone =
+        makeTimeZone(TimeZoneDecorator::get(getExpressionContext()->opCtx->getServiceContext()),
+                     root,
+                     _timeZone);
 
     if (!timeZone) {
         return Value(BSONNULL);
@@ -1382,8 +1384,10 @@ Value ExpressionDateFromString::serialize(bool explain) const {
 Value ExpressionDateFromString::evaluate(const Document& root) const {
     const Value dateString = _dateString->evaluate(root);
 
-    auto timeZone = makeTimeZone(
-        TimeZoneDatabase::get(getExpressionContext()->opCtx->getServiceContext()), root, _timeZone);
+    auto timeZone =
+        makeTimeZone(TimeZoneDecorator::get(getExpressionContext()->opCtx->getServiceContext()),
+                     root,
+                     _timeZone);
 
     if (!timeZone || dateString.nullish()) {
         return Value(BSONNULL);
@@ -1397,7 +1401,7 @@ Value ExpressionDateFromString::evaluate(const Document& root) const {
             dateString.getType() == BSONType::String);
     const std::string& dateTimeString = dateString.getString();
 
-    auto tzdb = TimeZoneDatabase::get(getExpressionContext()->opCtx->getServiceContext());
+    auto tzdb = TimeZoneDecorator::get(getExpressionContext()->opCtx->getServiceContext());
 
     return Value(tzdb->fromString(dateTimeString, timeZone));
 }
@@ -1504,8 +1508,10 @@ boost::optional<int> ExpressionDateToParts::evaluateIso8601Flag(const Document& 
 Value ExpressionDateToParts::evaluate(const Document& root) const {
     const Value date = _date->evaluate(root);
 
-    auto timeZone = makeTimeZone(
-        TimeZoneDatabase::get(getExpressionContext()->opCtx->getServiceContext()), root, _timeZone);
+    auto timeZone =
+        makeTimeZone(TimeZoneDecorator::get(getExpressionContext()->opCtx->getServiceContext()),
+                     root,
+                     _timeZone);
     if (!timeZone) {
         return Value(BSONNULL);
     }
@@ -1632,8 +1638,10 @@ Value ExpressionDateToString::serialize(bool explain) const {
 Value ExpressionDateToString::evaluate(const Document& root) const {
     const Value date = _date->evaluate(root);
 
-    auto timeZone = makeTimeZone(
-        TimeZoneDatabase::get(getExpressionContext()->opCtx->getServiceContext()), root, _timeZone);
+    auto timeZone =
+        makeTimeZone(TimeZoneDecorator::get(getExpressionContext()->opCtx->getServiceContext()),
+                     root,
+                     _timeZone);
     if (!timeZone) {
         return Value(BSONNULL);
     }

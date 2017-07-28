@@ -53,8 +53,8 @@ public:
         : _queryServiceContext(stdx::make_unique<QueryTestServiceContext>()),
           _opCtx(_queryServiceContext->makeOperationContext()),
           _expCtx(new ExpressionContextForTest(_opCtx.get(), AggregationRequest(nss, {}))) {
-        TimeZoneDatabase::set(_queryServiceContext->getServiceContext(),
-                              stdx::make_unique<TimeZoneDatabase>());
+        TimeZoneDecorator::set(_queryServiceContext->getServiceContext(),
+                               stdx::make_unique<TimeZoneDatabase>());
     }
 
     boost::intrusive_ptr<ExpressionContextForTest> getExpCtx() {

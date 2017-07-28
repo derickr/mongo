@@ -32,7 +32,6 @@
 #include <string>
 
 #include "mongo/base/disallow_copying.h"
-#include "mongo/db/service_context.h"
 #include "mongo/util/string_map.h"
 #include "mongo/util/time_support.h"
 
@@ -346,17 +345,6 @@ public:
         TimelibErrorContainerDeleter() = default;
         void operator()(timelib_error_container* errorContainer);
     };
-
-    /**
-     * Returns the TimeZoneDatabase object associated with the specified service context.
-     */
-    static const TimeZoneDatabase* get(ServiceContext* serviceContext);
-
-    /**
-     * Sets the TimeZoneDatabase object associated with the specified service context.
-     */
-    static void set(ServiceContext* serviceContext,
-                    std::unique_ptr<TimeZoneDatabase> timeZoneDatabase);
 
     /**
      * Constructs a Date_t from a string description of a date.

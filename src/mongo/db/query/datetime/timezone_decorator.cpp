@@ -26,41 +26,38 @@
  * then also delete it in the license file.
  */
 
+#define MONGO_LOG_DEFAULT_COMPONENT ::mongo::logger::LogComponent::kDefault
+
 #include "mongo/platform/basic.h"
 
+#include <memory>
 #include <timelib.h>
 
-#include "mongo/base/init.h"
 #include "mongo/db/query/datetime/date_time_support.h"
 #include "mongo/db/query/datetime/timezone_decorator.h"
-#include "mongo/db/server_options.h"
+
+#include "mongo/base/init.h"
+#include "mongo/bson/util/builder.h"
 #include "mongo/db/service_context.h"
 #include "mongo/stdx/memory.h"
-#include "mongo/util/mongoutils/str.h"
+#include "mongo/util/assert_util.h"
 
 namespace mongo {
 
-MONGO_INITIALIZER_WITH_PREREQUISITES(
-    LoadTimeZoneDB, ("GlobalLogManager", "SetGlobalEnvironment", "EndStartupOptionStorage"))
-(InitializerContext* context) {
-    auto serviceContext = getGlobalServiceContext();
-    if (!serverGlobalParams.timeZoneInfoPath.empty()) {
-        std::unique_ptr<timelib_tzdb, TimeZoneDatabase::TimeZoneDBDeleter> timeZoneDatabase(
-            timelib_zoneinfo(const_cast<char*>(serverGlobalParams.timeZoneInfoPath.c_str())),
-            TimeZoneDatabase::TimeZoneDBDeleter());
-        if (!timeZoneDatabase) {
-            return {ErrorCodes::FailedToParse,
-                    str::stream() << "failed to load time zone database from path \""
-                                  << serverGlobalParams.timeZoneInfoPath
-                                  << "\""};
-        }
-        TimeZoneDecorator::set(serviceContext,
-                               stdx::make_unique<TimeZoneDatabase>(std::move(timeZoneDatabase)));
-    } else {
-        // No 'zoneInfo' specified on the command line, fall back to the built-in rules.
-        TimeZoneDecorator::set(serviceContext, stdx::make_unique<TimeZoneDatabase>());
-    }
-    return Status::OK();
+namespace {
+const auto getTimeZoneDatabase =
+    ServiceContext::declareDecoration<std::unique_ptr<TimeZoneDatabase>>();
+
+}  // namespace
+
+const TimeZoneDatabase* TimeZoneDecorator::get(ServiceContext* serviceContext) {
+    invariant(getTimeZoneDatabase(serviceContext));
+    return getTimeZoneDatabase(serviceContext).get();
+}
+
+void TimeZoneDecorator::set(ServiceContext* serviceContext,
+                            std::unique_ptr<TimeZoneDatabase> dateTimeSupport) {
+    getTimeZoneDatabase(serviceContext) = std::move(dateTimeSupport);
 }
 
 }  // namespace mongo

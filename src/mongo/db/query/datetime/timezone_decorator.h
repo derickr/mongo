@@ -26,41 +26,36 @@
  * then also delete it in the license file.
  */
 
-#include "mongo/platform/basic.h"
+#pragma once
 
-#include <timelib.h>
+#include <memory>
+#include <string>
 
-#include "mongo/base/init.h"
+#include "mongo/base/disallow_copying.h"
 #include "mongo/db/query/datetime/date_time_support.h"
-#include "mongo/db/query/datetime/timezone_decorator.h"
-#include "mongo/db/server_options.h"
 #include "mongo/db/service_context.h"
-#include "mongo/stdx/memory.h"
-#include "mongo/util/mongoutils/str.h"
+#include "mongo/util/time_support.h"
 
 namespace mongo {
 
-MONGO_INITIALIZER_WITH_PREREQUISITES(
-    LoadTimeZoneDB, ("GlobalLogManager", "SetGlobalEnvironment", "EndStartupOptionStorage"))
-(InitializerContext* context) {
-    auto serviceContext = getGlobalServiceContext();
-    if (!serverGlobalParams.timeZoneInfoPath.empty()) {
-        std::unique_ptr<timelib_tzdb, TimeZoneDatabase::TimeZoneDBDeleter> timeZoneDatabase(
-            timelib_zoneinfo(const_cast<char*>(serverGlobalParams.timeZoneInfoPath.c_str())),
-            TimeZoneDatabase::TimeZoneDBDeleter());
-        if (!timeZoneDatabase) {
-            return {ErrorCodes::FailedToParse,
-                    str::stream() << "failed to load time zone database from path \""
-                                  << serverGlobalParams.timeZoneInfoPath
-                                  << "\""};
-        }
-        TimeZoneDecorator::set(serviceContext,
-                               stdx::make_unique<TimeZoneDatabase>(std::move(timeZoneDatabase)));
-    } else {
-        // No 'zoneInfo' specified on the command line, fall back to the built-in rules.
-        TimeZoneDecorator::set(serviceContext, stdx::make_unique<TimeZoneDatabase>());
-    }
-    return Status::OK();
-}
+/**
+ * A C++ interface wrapping the third-party timelib library. A single instance of this class can be
+ * accessed via the global service context.
+ */
+class TimeZoneDecorator {
+    MONGO_DISALLOW_COPYING(TimeZoneDecorator);
+
+public:
+    /**
+     * Returns the TimeZoneDatabase object associated with the specified service context.
+     */
+    static const TimeZoneDatabase* get(ServiceContext* serviceContext);
+
+    /**
+     * Sets the TimeZoneDatabase object associated with the specified service context.
+     */
+    static void set(ServiceContext* serviceContext,
+                    std::unique_ptr<TimeZoneDatabase> timeZoneDatabase);
+};
 
 }  // namespace mongo
