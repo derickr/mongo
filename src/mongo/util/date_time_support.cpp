@@ -33,7 +33,7 @@
 #include <memory>
 #include <timelib.h>
 
-#include "mongo/db/query/datetime/date_time_support.h"
+#include "mongo/util/date_time_support.h"
 
 #include "mongo/base/init.h"
 #include "mongo/base/parse_number.h"

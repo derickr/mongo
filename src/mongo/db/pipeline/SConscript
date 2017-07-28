@@ -49,7 +49,6 @@ env.Library(
     LIBDEPS=[
         'field_path',
         '$BUILD_DIR/mongo/base',
-        '$BUILD_DIR/mongo/db/query/datetime/date_time_support',
         '$BUILD_DIR/mongo/util/intrusive_counter',
         ]
     )
@@ -185,7 +184,8 @@ env.Library(
         'dependencies',
         'document_value',
         'expression_context',
-        '$BUILD_DIR/mongo/db/query/datetime/date_time_support',
+        '$BUILD_DIR/mongo/base',
+        '$BUILD_DIR/mongo/db/query/datetime/timezone_decorator',
         '$BUILD_DIR/mongo/util/summation',
     ]
 )

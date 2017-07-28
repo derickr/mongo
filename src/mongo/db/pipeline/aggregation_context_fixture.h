@@ -33,11 +33,12 @@
 
 #include "mongo/db/client.h"
 #include "mongo/db/pipeline/expression_context_for_test.h"
-#include "mongo/db/query/datetime/date_time_support.h"
 #include "mongo/db/query/query_test_service_context.h"
+#include "mongo/db/query/datetime/timezone_decorator.h"
 #include "mongo/db/service_context_noop.h"
 #include "mongo/stdx/memory.h"
 #include "mongo/unittest/unittest.h"
+#include "mongo/util/date_time_support.h"
 
 namespace mongo {
 

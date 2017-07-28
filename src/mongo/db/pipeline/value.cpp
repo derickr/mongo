@@ -41,8 +41,8 @@
 #include "mongo/bson/simple_bsonobj_comparator.h"
 #include "mongo/db/jsobj.h"
 #include "mongo/db/pipeline/document.h"
-#include "mongo/db/query/datetime/date_time_support.h"
 #include "mongo/platform/decimal128.h"
+#include "mongo/util/date_time_support.h"
 #include "mongo/util/hex.h"
 #include "mongo/util/mongoutils/str.h"
 

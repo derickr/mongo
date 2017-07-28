@@ -33,7 +33,6 @@
 #include <memory>
 #include <timelib.h>
 
-#include "mongo/db/query/datetime/date_time_support.h"
 #include "mongo/db/query/datetime/timezone_decorator.h"
 
 #include "mongo/base/init.h"
@@ -41,6 +40,7 @@
 #include "mongo/db/service_context.h"
 #include "mongo/stdx/memory.h"
 #include "mongo/util/assert_util.h"
+#include "mongo/util/date_time_support.h"
 
 namespace mongo {
 

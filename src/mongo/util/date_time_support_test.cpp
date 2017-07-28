@@ -30,8 +30,8 @@
 
 #include <sstream>
 
-#include "mongo/db/query/datetime/date_time_support.h"
 #include "mongo/unittest/unittest.h"
+#include "mongo/util/date_time_support.h"
 
 namespace mongo {
 namespace {

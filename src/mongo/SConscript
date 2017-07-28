@@ -17,6 +17,7 @@ Import("use_system_version_of_library")
 env = env.Clone()
 
 env.InjectMongoIncludePaths()
+env.InjectThirdPartyIncludePaths('timelib')
 
 env.SConscript(
     dirs=[
@@ -111,6 +112,7 @@ baseSource=[
     'util/base64.cpp',
     'util/concurrency/idle_thread_block.cpp',
     'util/concurrency/thread_name.cpp',
+    'util/date_time_support.cpp',
     'util/duration.cpp',
     'util/errno_util.cpp',
     'util/exception_filter_win32.cpp',
@@ -141,6 +143,7 @@ baseLibDeps=[
     '$BUILD_DIR/third_party/shim_boost',
     '$BUILD_DIR/third_party/shim_intel_decimal128',
     '$BUILD_DIR/third_party/shim_pcrecpp',
+    '$BUILD_DIR/third_party/shim_timelib',
     '$BUILD_DIR/third_party/shim_tz',
     'util/debugger',
     'util/quick_exit',

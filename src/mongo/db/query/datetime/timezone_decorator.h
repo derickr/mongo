@@ -32,8 +32,8 @@
 #include <string>
 
 #include "mongo/base/disallow_copying.h"
-#include "mongo/db/query/datetime/date_time_support.h"
 #include "mongo/db/service_context.h"
+#include "mongo/util/date_time_support.h"
 #include "mongo/util/time_support.h"
 
 namespace mongo {
