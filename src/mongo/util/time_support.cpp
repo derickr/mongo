@@ -161,41 +161,13 @@ static timelib_tzinfo* fromisostring_gettzinfowrapper(char* tz_id,
     return nullptr;
 }
 
-namespace timeSupportHelpers {
-
-/**
- * A custom-deleter which destructs a timelib_time* when it goes out of scope.
- */
-struct TimelibTimeDeleter {
-    TimelibTimeDeleter() = default;
-    void operator()(timelib_time* time);
-};
-
-/**
- * A custom-deleter which destructs a timelib_error_container* when it goes out of scope.
- */
-struct TimelibErrorContainerDeleter {
-    TimelibErrorContainerDeleter() = default;
-    void operator()(timelib_error_container* errorContainer);
-};
-
-void TimelibTimeDeleter::operator()(timelib_time* time) {
-    timelib_time_dtor(time);
-}
-
-void TimelibErrorContainerDeleter::operator()(timelib_error_container* errorContainer) {
-    timelib_error_container_dtor(errorContainer);
-}
-
-}  // namespace
-
 StatusWith<Date_t> dateFromISOString(StringData dateString) {
     std::unique_ptr<timelib_error_container,
-                    mongo::timeSupportHelpers::TimelibErrorContainerDeleter>
+                    TimeZoneDatabase::TimelibErrorContainerDeleter>
         errors{};
     timelib_error_container* rawErrors;
 
-    std::unique_ptr<timelib_time, mongo::timeSupportHelpers::TimelibTimeDeleter> parsedTime(
+    std::unique_ptr<timelib_time, TimeZone::TimelibTimeDeleter> parsedTime(
         timelib_strtotime(const_cast<char*>(dateString.toString().c_str()),
                           dateString.size(),
                           &rawErrors,
