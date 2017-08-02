@@ -394,6 +394,18 @@ TimeZone::DateParts TimeZone::dateParts(Date_t date) const {
     return DateParts(*time, date);
 }
 
+std::string TimeZone::abbreviatedDayOfWeekName(Date_t date) const {
+    std::vector<std::string> dayNames = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+    auto time = getTimelibTime(date);
+    return dayNames[timelib_day_of_week(time->y, time->m, time->d)];
+}
+
+std::string TimeZone::abbreviatedMonthName(int month) const {
+    std::vector<std::string> monthNames = {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    return monthNames[month - 1];
+}
+
 int TimeZone::dayOfWeek(Date_t date) const {
     auto time = getTimelibTime(date);
     // timelib_day_of_week() returns a number in the range [0,6], we want [1,7], so add one.
@@ -461,13 +473,16 @@ void TimeZone::validateFormat(StringData format) {
             case '%':
             case 'Y':
             case 'm':
+            case 'b':
             case 'd':
+            case 'e':
             case 'H':
             case 'M':
             case 'S':
             case 'L':
             case 'j':
             case 'w':
+            case 'a':
             case 'U':
             case 'G':
             case 'V':

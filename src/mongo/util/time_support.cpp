@@ -38,9 +38,9 @@
 #include "mongo/base/init.h"
 #include "mongo/base/parse_number.h"
 #include "mongo/bson/util/builder.h"
-#include "mongo/db/query/datetime/date_time_support.h"
 #include "mongo/stdx/thread.h"
 #include "mongo/util/assert_util.h"
+#include "mongo/util/date_time_support.h"
 #include "mongo/util/mongoutils/str.h"
 
 #ifdef _WIN32
@@ -64,7 +64,7 @@ stdx::chrono::system_clock::time_point Date_t::toSystemTimePoint() const {
 }
 
 bool Date_t::isFormattable() const {
-    if (millis < 0) {
+    if (millis < -2145916800000LL) {  // "1902-01-01T00:00:00Z"
         return false;
     }
     if (sizeof(time_t) == sizeof(int32_t)) {
@@ -81,76 +81,11 @@ thread_local long long jsTime_virtual_thread_skew = 0;
 
 using std::string;
 
-void time_t_to_Struct(time_t t, struct tm* buf, bool local) {
-#if defined(_WIN32)
-    if (local)
-        localtime_s(buf, &t);
-    else
-        gmtime_s(buf, &t);
-#else
-    if (local)
-        localtime_r(&t, buf);
-    else
-        gmtime_r(&t, buf);
-#endif
-}
-
-std::string time_t_to_String_short(time_t t) {
-    char buf[64];
-#if defined(_WIN32)
-    ctime_s(buf, sizeof(buf), &t);
-#else
-    ctime_r(&t, buf);
-#endif
-    buf[19] = 0;
-    if (buf[0] && buf[1] && buf[2] && buf[3])
-        return buf + 4;  // skip day of week
-    return buf;
-}
-
-
-// uses ISO 8601 dates without trailing Z
-// colonsOk should be false when creating filenames
-string terseCurrentTime(bool colonsOk) {
-    struct tm t;
-    time_t_to_Struct(time(0), &t);
-
-    const char* fmt = (colonsOk ? "%Y-%m-%dT%H:%M:%S" : "%Y-%m-%dT%H-%M-%S");
-    char buf[32];
-    fassert(16226, strftime(buf, sizeof(buf), fmt, &t) == 19);
-    return buf;
-}
-
-string terseUTCCurrentTime() {
-    return terseCurrentTime(false) + "Z";
-}
-
-#define MONGO_ISO_DATE_FMT_NO_TZ "%Y-%m-%dT%H:%M:%S"
-
-namespace {
-struct DateStringBuffer {
-    static const int dataCapacity = 64;
-    char data[dataCapacity];
-    int size;
-};
-
-void _dateToISOString(Date_t date, bool local, DateStringBuffer* result) {
+string dateToString(Date_t date, bool local, string format) {
     invariant(date.isFormattable());
-    static const int bufSize = DateStringBuffer::dataCapacity;
-    char* const buf = result->data;
-    struct tm t;
-    time_t_to_Struct(date.toTimeT(), &t, local);
-    int pos = strftime(buf, bufSize, MONGO_ISO_DATE_FMT_NO_TZ, &t);
-    dassert(0 < pos);
-    char* cur = buf + pos;
-    int bufRemaining = bufSize - pos;
-    pos = snprintf(cur, bufRemaining, ".%03d", static_cast<int32_t>(date.asInt64() % 1000));
-    dassert(bufRemaining > pos && pos > 0);
-    cur += pos;
-    bufRemaining -= pos;
+
     if (local) {
-        static const int localTzSubstrLen = 5;
-        dassert(bufRemaining >= localTzSubstrLen + 1);
+        TimeZone zone;
 #ifdef _WIN32
         // NOTE(schwerin): The value stored by _get_timezone is the value one adds to local time
         // to get UTC.  This is opposite of the ISO-8601 meaning of the timezone offset.
@@ -159,82 +94,63 @@ void _dateToISOString(Date_t date, bool local, DateStringBuffer* result) {
         // related time library functions.
         long msTimeZone;
         _get_timezone(&msTimeZone);
-        if (t.tm_isdst)
+        if (t.tm_isdst) {
             msTimeZone -= 3600;
-        const bool tzIsWestOfUTC = msTimeZone > 0;
-        const long tzOffsetSeconds = msTimeZone * (tzIsWestOfUTC ? 1 : -1);
-        const long tzOffsetHoursPart = tzOffsetSeconds / 3600;
-        const long tzOffsetMinutesPart = (tzOffsetSeconds / 60) % 60;
-        snprintf(cur,
-                 localTzSubstrLen + 1,
-                 "%c%02ld%02ld",
-                 tzIsWestOfUTC ? '-' : '+',
-                 tzOffsetHoursPart,
-                 tzOffsetMinutesPart);
+        }
+
+        zone = mongo::TimeZone(Seconds(-msTimeZone));
 #else
-        strftime(cur, bufRemaining, "%z", &t);
+        time_t t = date.toTimeT();
+        struct tm lt = {0};
+        localtime_r(&t, &lt);
+
+        zone = mongo::TimeZone(Seconds(lt.tm_gmtoff));
 #endif
-        cur += localTzSubstrLen;
+        return zone.formatDate(format, date);
     } else {
-        dassert(bufRemaining >= 2);
-        *cur = 'Z';
-        ++cur;
+        return mongo::TimeZoneDatabase::utcZone().formatDate(format, date);
     }
-    result->size = cur - buf;
-    dassert(result->size < DateStringBuffer::dataCapacity);
 }
 
-void _dateToCtimeString(Date_t date, DateStringBuffer* result) {
-    static const size_t ctimeSubstrLen = 19;
-    static const size_t millisSubstrLen = 4;
-    time_t t = date.toTimeT();
-#if defined(_WIN32)
-    ctime_s(result->data, sizeof(result->data), &t);
-#else
-    ctime_r(&t, result->data);
-#endif
-    char* milliSecStr = result->data + ctimeSubstrLen;
-    snprintf(
-        milliSecStr, millisSubstrLen + 1, ".%03d", static_cast<int32_t>(date.asInt64() % 1000));
-    result->size = ctimeSubstrLen + millisSubstrLen;
+string time_t_to_String_short(time_t time) {
+    Date_t date = Date_t::fromTimeT(time);
+
+    return dateToString(date, true, kCTimeFormatWithoutDayName);
 }
 
-}  // namespace
-
-std::string dateToISOStringUTC(Date_t date) {
-    DateStringBuffer buf;
-    _dateToISOString(date, false, &buf);
-    return std::string(buf.data, buf.size);
+// uses ISO 8601 dates without trailing Z
+// colonsOk should be false when creating filenames
+string terseCurrentTime(bool colonsOk) {
+    return dateToString(
+        Date_t::now(), false, colonsOk ? kTerseCurrentTimeColon : kTerseCurrentTimeHyphen);
 }
 
-std::string dateToISOStringLocal(Date_t date) {
-    DateStringBuffer buf;
-    _dateToISOString(date, true, &buf);
-    return std::string(buf.data, buf.size);
+string terseUTCCurrentTime() {
+    return dateToString(Date_t::now(), false, kTerseCurrentTimeHyphenUTC);
 }
 
-std::string dateToCtimeString(Date_t date) {
-    DateStringBuffer buf;
-    _dateToCtimeString(date, &buf);
-    return std::string(buf.data, buf.size);
+string dateToISOStringUTC(Date_t date) {
+    return dateToString(date, false, kISODateFormatUTC);
+}
+
+string dateToISOStringLocal(Date_t date) {
+    return dateToString(date, true, kISODateFormatLocal);
+}
+
+string dateToCtimeString(Date_t date) {
+    return dateToString(date, true, kCTimeFormat);
 }
 
 void outputDateAsISOStringUTC(std::ostream& os, Date_t date) {
-    DateStringBuffer buf;
-    _dateToISOString(date, false, &buf);
-    os << StringData(buf.data, buf.size);
+    os << dateToString(date, false, kISODateFormatUTC);
 }
 
 void outputDateAsISOStringLocal(std::ostream& os, Date_t date) {
-    DateStringBuffer buf;
-    _dateToISOString(date, true, &buf);
-    os << StringData(buf.data, buf.size);
+    os << dateToString(date, true, kISODateFormatLocal);
 }
 
 void outputDateAsCtime(std::ostream& os, Date_t date) {
-    DateStringBuffer buf;
-    _dateToCtimeString(date, &buf);
-    os << StringData(buf.data, buf.size);
+    os << dateToString(date, true, kCTimeFormat);
 }
 
 static timelib_tzinfo* fromisostring_gettzinfowrapper(char* tz_id,
@@ -324,8 +240,6 @@ StatusWith<Date_t> dateFromISOString(StringData dateString) {
     return Date_t::fromMillisSinceEpoch(
         durationCount<Milliseconds>(Seconds(parsedTime->sse) + Microseconds(parsedTime->us)));
 }
-
-#undef MONGO_ISO_DATE_FMT_NO_TZ
 
 std::string Date_t::toString() const {
     if (isFormattable()) {

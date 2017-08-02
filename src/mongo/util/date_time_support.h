@@ -146,6 +146,17 @@ public:
     }
 
     /**
+     * Returns abbreviated name of the day of week (i.e.: Sun, Sat, etc.).
+     */
+    std::string abbreviatedDayOfWeekName(Date_t) const;
+
+    /**
+     * Returns abbreviated name of the month (i.e.: Jan, Oct, etc.). The input month is 1 based (for
+     * January).
+     */
+    std::string abbreviatedMonthName(int month) const;
+
+    /**
      * Returns the weekday number, ranging from 1 (for Sunday) to 7 (for Saturday).
      */
     int dayOfWeek(Date_t) const;
@@ -223,8 +234,14 @@ public:
                 case 'm':  // Month
                     insertPadded(os, parts.month, 2);
                     break;
+                case 'b':  // Abbreviated name of month
+                    os << abbreviatedMonthName(parts.month);
+                    break;
                 case 'd':  // Day of month
                     insertPadded(os, parts.dayOfMonth, 2);
+                    break;
+                case 'e':  // Day of month (with trailing '0' replaced by ' ');
+                    insertPaddedWithChars(os, parts.dayOfMonth, 2, "    ");
                     break;
                 case 'H':  // Hour
                     insertPadded(os, parts.hour, 2);
@@ -243,6 +260,9 @@ public:
                     break;
                 case 'w':  // Day of week
                     insertPadded(os, dayOfWeek(date), 1);
+                    break;
+                case 'a':  // Abbreviated name of day of week
+                    os << abbreviatedDayOfWeekName(date);
                     break;
                 case 'U':  // Week
                     insertPadded(os, week(date), 2);
@@ -283,12 +303,11 @@ public:
 private:
     std::unique_ptr<timelib_time, TimelibTimeDeleter> getTimelibTime(Date_t) const;
 
-    /**
-     * Only works with 1 <= spaces <= 4 and 0 <= number <= 9999. If spaces is less than the digit
-     * count of number we simply insert the number without padding.
-     */
     template <typename OutputStream>
-    void insertPadded(OutputStream& os, int number, int width) const {
+    void insertPaddedWithChars(OutputStream& os,
+                               int number,
+                               int width,
+                               const char* padChars) const {
         invariant(width >= 1);
         invariant(width <= 4);
         invariant(number >= 0);
@@ -305,9 +324,18 @@ private:
         }
 
         if (width > digits) {
-            os.write("0000", width - digits);
+            os.write(padChars, width - digits);
         }
         os << number;
+    }
+
+    /**
+     * Only works with 1 <= spaces <= 4 and 0 <= number <= 9999. If spaces is less than the digit
+     * count of number we simply insert the number without padding.
+     */
+    template <typename OutputStream>
+    void insertPadded(OutputStream& os, int number, int width) const {
+        insertPaddedWithChars(os, number, width, "0000");
     }
 
     struct TimelibTZInfoDeleter {

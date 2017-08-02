@@ -45,9 +45,6 @@ namespace mongo {
 template <typename Allocator>
 class StringBuilderImpl;
 
-void time_t_to_Struct(time_t t, struct tm* buf, bool local = false);
-std::string time_t_to_String_short(time_t t);
-
 /**
  * Representation of a point in time, with millisecond resolution and capable
  * of representing all times representable by the BSON Date type.
@@ -67,6 +64,14 @@ public:
      * Reads the system clock and returns a Date_t representing the present time.
      */
     static Date_t now();
+
+    /**
+     * Returns a Date_t from an integer number of seconds since the epoch as stored in a time_t
+     * value.
+     */
+    static constexpr Date_t fromTimeT(time_t time) {
+        return Date_t(time * 1000);
+    }
 
     /**
      * Returns a Date_t from an integer number of milliseconds since the epoch.
@@ -150,8 +155,8 @@ public:
 
     /**
      * Returns true if this Date_t is in the range of Date_ts that can be formatted as calendar
-     * dates.  This property is guaranteed to be true for all dates from the epoch,
-     * 1970-01-01T00:00:00.000Z, through 3000-12-31T23:59:59.000Z on 64-bit systems and through
+     * dates.  This property is guaranteed to be true for all dates from
+     * 1902-01-01T00:00:00.000Z, through 3000-12-31T23:59:59.000Z on 64-bit systems and through
      * 2038-01-19T03:14:07.000Z on 32-bit systems.
      */
     bool isFormattable() const;
@@ -230,12 +235,43 @@ private:
     long long millis = 0;
 };
 
-// uses ISO 8601 dates without trailing Z
-// colonsOk should be false when creating filenames
+const std::string kISODateFormatUTC("%Y-%m-%dT%H:%M:%S.%LZ");
+const std::string kISODateFormatLocal("%Y-%m-%dT%H:%M:%S.%L%z");
+const std::string kCTimeFormat("%a %b %e %H:%M:%S.%L");
+const std::string kCTimeFormatWithoutDayName("%b %e %H:%M:%S.%L");
+const std::string kTerseCurrentTimeColon("%Y-%m-%dT%H:%M:%S");
+const std::string kTerseCurrentTimeHyphen("%Y-%m-%dT%H-%M-%S");
+const std::string kTerseCurrentTimeHyphenUTC("%Y-%m-%dT%H-%M-%SZ");
+
+/**
+ * Formats the given 'date' according to the given 'format', either in UTC ('local' = false), or
+ * local time ('local' = true).
+ *
+ * This function is used by other methods that format a Date_t in specific formats.
+ */
+std::string dateToString(Date_t date, bool local, std::string format);
+
+/**
+ * Formats "time" in fixed width in the local time zone, without the day name.
+ *
+ * Sample format: "Oct 31 13:34:47.996"
+ */
+std::string time_t_to_String_short(time_t time);
+
+/**
+ * Produces a short UTC date + time appropriate for file names without Z appended.
+ *
+ * colonsOk should be false when creating filenames, in which case the colons in the time are
+ * replaced by hyphens.
+ *
+ * Sample formats:
+ * - colonsOk = true: "1970-06-29T21:06:40"
+ * - colonsOk = false: "1970-06-29T21-06-40"
+ */
 std::string terseCurrentTime(bool colonsOk = true);
 
 /**
- * Produces a short UTC date + time approriate for file names with Z appended.
+ * Produces a short UTC date + time appropriate for file names with Z appended.
  */
 std::string terseUTCCurrentTime();
 
@@ -268,7 +304,7 @@ std::string dateToCtimeString(Date_t date);
  * Sample formats: "2013-07-23T18:42:14.072-05:00"
  *                 "2013-07-23T18:42:14.072Z"
  *
- * Local times are currently not supported.
+ * Local times without time zone specification are currently not supported.
  */
 StatusWith<Date_t> dateFromISOString(StringData dateString);
 
