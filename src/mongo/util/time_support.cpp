@@ -93,9 +93,11 @@ string dateToString(Date_t date, bool local, string format) {
         // savings time.  We can do no better without completely reimplementing localtime_s and
         // related time library functions.
         long msTimeZone;
+        int  dayLightHours;
         _get_timezone(&msTimeZone);
-        if (t.tm_isdst) {
-            msTimeZone -= 3600;
+        _get_daylight(&dayLightHours);
+        if (dayLightHours) {
+            msTimeZone -= 3600 * dayLightHours;
         }
 
         zone = mongo::TimeZone(Seconds(-msTimeZone));
