@@ -86,6 +86,8 @@ string dateToString(Date_t date, bool local, string format) {
 
     if (local) {
         TimeZone zone;
+        time_t t = date.toTimeT();
+        struct tm lt = {0};
 #ifdef _WIN32
         // NOTE(schwerin): The value stored by _get_timezone is the value one adds to local time
         // to get UTC.  This is opposite of the ISO-8601 meaning of the timezone offset.
@@ -93,17 +95,16 @@ string dateToString(Date_t date, bool local, string format) {
         // savings time.  We can do no better without completely reimplementing localtime_s and
         // related time library functions.
         long msTimeZone;
-        int dayLightHours;
+
         _get_timezone(&msTimeZone);
-        _get_daylight(&dayLightHours);
-        if (dayLightHours) {
-            msTimeZone -= 3600 * dayLightHours;
+
+        localtime_s(&lt, &t);
+        if (lt.tm_isdst) {
+            msTimeZone -= 3600;
         }
 
         zone = mongo::TimeZone(Seconds(-msTimeZone));
 #else
-        time_t t = date.toTimeT();
-        struct tm lt = {0};
         localtime_r(&t, &lt);
 
         zone = mongo::TimeZone(Seconds(lt.tm_gmtoff));
