@@ -121,6 +121,14 @@ string time_t_to_String_short(time_t time) {
     return dateToString(date, true, kCTimeFormatWithoutDayName);
 }
 
+const std::string kISODateFormatUTC("%Y-%m-%dT%H:%M:%S.%LZ");
+const std::string kISODateFormatLocal("%Y-%m-%dT%H:%M:%S.%L%z");
+const std::string kCTimeFormat("%a %b %e %H:%M:%S.%L");
+const std::string kCTimeFormatWithoutDayName("%b %e %H:%M:%S.%L");
+const std::string kTerseCurrentTimeColon("%Y-%m-%dT%H:%M:%S");
+const std::string kTerseCurrentTimeHyphen("%Y-%m-%dT%H-%M-%S");
+const std::string kTerseCurrentTimeHyphenUTC("%Y-%m-%dT%H-%M-%SZ");
+
 // uses ISO 8601 dates without trailing Z
 // colonsOk should be false when creating filenames
 string terseCurrentTime(bool colonsOk) {

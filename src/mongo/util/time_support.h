@@ -235,14 +235,6 @@ private:
     long long millis = 0;
 };
 
-const std::string kISODateFormatUTC("%Y-%m-%dT%H:%M:%S.%LZ");
-const std::string kISODateFormatLocal("%Y-%m-%dT%H:%M:%S.%L%z");
-const std::string kCTimeFormat("%a %b %e %H:%M:%S.%L");
-const std::string kCTimeFormatWithoutDayName("%b %e %H:%M:%S.%L");
-const std::string kTerseCurrentTimeColon("%Y-%m-%dT%H:%M:%S");
-const std::string kTerseCurrentTimeHyphen("%Y-%m-%dT%H-%M-%S");
-const std::string kTerseCurrentTimeHyphenUTC("%Y-%m-%dT%H-%M-%SZ");
-
 /**
  * Formats the given 'date' according to the given 'format', either in UTC ('local' = false), or
  * local time ('local' = true).
