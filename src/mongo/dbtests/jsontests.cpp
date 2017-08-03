@@ -454,12 +454,12 @@ public:
     }
 
     void run() {
-        BSONObjBuilder b;
-        b.appendDate("a", Date_t());
-        BSONObj built = b.done();
+        BSONObjBuilder b1;
+        b1.appendDate("a", Date_t());
+        BSONObj built1 = b1.done();
         ASSERT_EQUALS("{ \"a\" : { \"$date\" : \"1969-12-31T19:00:00.000-0500\" } }",
-                      built.jsonString(Strict));
-        ASSERT_EQUALS("{ \"a\" : Date( 0 ) }", built.jsonString(TenGen));
+                      built1.jsonString(Strict));
+        ASSERT_EQUALS("{ \"a\" : Date( 0 ) }", built1.jsonString(TenGen));
 
         // Test dates above our maximum formattable date.  See SERVER-13760.
         BSONObjBuilder b2;
@@ -467,22 +467,26 @@ public:
         BSONObj built2 = b2.done();
         ASSERT_EQUALS("{ \"a\" : { \"$date\" : { \"$numberLong\" : \"32535262800000\" } } }",
                       built2.jsonString(Strict));
+
+        // Test dates before our minimal formattable date (1902-01-01T00:00:00Z).
+        BSONObjBuilder b3;
+        b3.appendDate("a", Date_t::fromMillisSinceEpoch(-2145916800001LL));
+        BSONObj built3 = b3.done();
+        ASSERT_EQUALS("{ \"a\" : { \"$date\" : { \"$numberLong\" : \"-2145916800001\" } } }",
+                      built3.jsonString(Strict));
+        ASSERT_EQUALS("{ \"a\" : Date( -2145916800001 ) }", built3.jsonString(TenGen));
+
+        // Test date just before the Epoch (1969-12-31T18:59:59.999-0500).
+        BSONObjBuilder b4;
+        b4.appendDate("a", Date_t::fromMillisSinceEpoch(-1));
+        BSONObj built4 = b4.done();
+        ASSERT_EQUALS("{ \"a\" : { \"$date\" : \"1969-12-31T18:59:59.999-0500\" } }",
+                      built4.jsonString(Strict));
+        ASSERT_EQUALS("{ \"a\" : Date( -1 ) }", built4.jsonString(TenGen));
     }
 
 private:
     std::string _oldTimezone;
-};
-
-class DateNegative {
-public:
-    void run() {
-        BSONObjBuilder b;
-        b.appendDate("a", Date_t::fromMillisSinceEpoch(-1));
-        BSONObj built = b.done();
-        ASSERT_EQUALS("{ \"a\" : { \"$date\" : { \"$numberLong\" : \"-1\" } } }",
-                      built.jsonString(Strict));
-        ASSERT_EQUALS("{ \"a\" : Date( -1 ) }", built.jsonString(TenGen));
-    }
 };
 
 class Regex {
@@ -1715,6 +1719,39 @@ class DateNegative : public Base {
     }
 };
 
+class DateMinRange : public Base {
+    virtual BSONObj bson() const {
+        BSONObjBuilder b;
+        b.appendDate("a", Date_t::fromMillisSinceEpoch(-2145916800000LL));
+        return b.obj();
+    }
+    virtual string json() const {
+        return "{ \"a\" : new Date( -2145916800000 ) }";
+    }
+};
+
+class DateMaxRange32Bit : public Base {
+    virtual BSONObj bson() const {
+        BSONObjBuilder b;
+        b.appendDate("a", Date_t::fromMillisSinceEpoch(2147483647000));
+        return b.obj();
+    }
+    virtual string json() const {
+        return "{ \"a\" : new Date( 2147483647000 ) }";
+    }
+};
+
+class DateMaxRange64Bit : public Base {
+    virtual BSONObj bson() const {
+        BSONObjBuilder b;
+        b.appendDate("a", Date_t::fromMillisSinceEpoch(32535215999000));
+        return b.obj();
+    }
+    virtual string json() const {
+        return "{ \"a\" : new Date( 32535215999000 ) }";
+    }
+};
+
 class NumberLongTest : public Base {
     virtual BSONObj bson() const {
         BSONObjBuilder b;
@@ -2727,7 +2764,6 @@ public:
         add<JsonStringTests::BinData>();
         add<JsonStringTests::Symbol>();
         add<JsonStringTests::Date>();
-        add<JsonStringTests::DateNegative>();
         add<JsonStringTests::Regex>();
         add<JsonStringTests::RegexEscape>();
         add<JsonStringTests::RegexManyOptions>();
@@ -2842,6 +2878,9 @@ public:
         add<FromJsonTests::DateMaxUnsigned>();
         add<FromJsonTests::DateStrictNegative>();
         add<FromJsonTests::DateNegative>();
+        add<FromJsonTests::DateMinRange>();
+        add<FromJsonTests::DateMaxRange32Bit>();
+        add<FromJsonTests::DateMaxRange64Bit>();
         add<FromJsonTests::NumberLongTest>();
         add<FromJsonTests::NumberLongMin>();
         add<FromJsonTests::NumberIntTest>();

@@ -1732,6 +1732,39 @@ class DateNegative : public TestRoundTrip {
     }
 };
 
+class DateMinRange : public TestRoundTrip {
+    virtual BSONObj bson() const {
+        BSONObjBuilder b;
+        b.appendDate("a", Date_t::fromMillisSinceEpoch(-2145916800000LL));
+        return b.obj();
+    }
+    virtual string json() const {
+        return "{ \"a\" : new Date( -2145916800000 ) }";
+    }
+};
+
+class DateMaxRange32Bit : public TestRoundTrip {
+    virtual BSONObj bson() const {
+        BSONObjBuilder b;
+        b.appendDate("a", Date_t::fromMillisSinceEpoch(2147483647000));
+        return b.obj();
+    }
+    virtual string json() const {
+        return "{ \"a\" : new Date( 2147483647000 ) }";
+    }
+};
+
+class DateMaxRange64Bit : public TestRoundTrip {
+    virtual BSONObj bson() const {
+        BSONObjBuilder b;
+        b.appendDate("a", Date_t::fromMillisSinceEpoch(32535215999000));
+        return b.obj();
+    }
+    virtual string json() const {
+        return "{ \"a\" : new Date( 32535215999000 ) }";
+    }
+};
+
 class JSTimestamp : public TestRoundTrip {
     virtual BSONObj bson() const {
         BSONObjBuilder b;
@@ -2461,6 +2494,9 @@ public:
         add<RoundTripTests::Date>();
         add<RoundTripTests::DateNonzero>();
         add<RoundTripTests::DateNegative>();
+        add<RoundTripTests::DateMinRange>();
+        add<RoundTripTests::DateMaxRange32Bit>();
+        add<RoundTripTests::DateMaxRange64Bit>();
         add<RoundTripTests::JSTimestamp>();
         add<RoundTripTests::TimestampMax>();
         add<RoundTripTests::Regex>();
