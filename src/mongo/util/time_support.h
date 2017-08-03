@@ -53,6 +53,14 @@ class StringBuilderImpl;
  */
 class Date_t {
 public:
+    static const std::string kISODateFormatUTC;
+    static const std::string kISODateFormatLocal;
+    static const std::string kCTimeFormat;
+    static const std::string kCTimeFormatWithoutDayName;
+    static const std::string kTerseCurrentTimeColon;
+    static const std::string kTerseCurrentTimeHyphen;
+    static const std::string kTerseCurrentTimeHyphenUTC;
+
     /**
      * The largest representable Date_t.
      */
