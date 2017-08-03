@@ -93,7 +93,7 @@ string dateToString(Date_t date, bool local, string format) {
         // savings time.  We can do no better without completely reimplementing localtime_s and
         // related time library functions.
         long msTimeZone;
-        int  dayLightHours;
+        int dayLightHours;
         _get_timezone(&msTimeZone);
         _get_daylight(&dayLightHours);
         if (dayLightHours) {
@@ -162,8 +162,7 @@ static timelib_tzinfo* fromisostring_gettzinfowrapper(char* tz_id,
 }
 
 StatusWith<Date_t> dateFromISOString(StringData dateString) {
-    std::unique_ptr<timelib_error_container,
-                    TimeZoneDatabase::TimelibErrorContainerDeleter>
+    std::unique_ptr<timelib_error_container, TimeZoneDatabase::TimelibErrorContainerDeleter>
         errors{};
     timelib_error_container* rawErrors;
 
