@@ -105,25 +105,22 @@ TEST(TimeFormatting, DateAsCtimeStringWithAllDaysOfWeek) {
 }
 
 TEST(TimeFormatting, DateAsTerseColons) {
-    ASSERT_EQUALS(std::string("1970-06-30T01:06:40"),
-                  dateToString(Date_t::fromMillisSinceEpoch(15556000981LL),
-                               false,
-                               Date_t::kTerseCurrentTimeColon));
-    ASSERT_EQUALS(std::string("2058-02-20T18:29:11"),
-                  dateToString(Date_t::fromMillisSinceEpoch(2781455351100LL),
-                               false,
-                               Date_t::kTerseCurrentTimeColon));
+    ASSERT_EQUALS(
+        std::string("1970-06-30T01:06:40"),
+        dateToString(Date_t::fromMillisSinceEpoch(15556000981LL), false, kTerseCurrentTimeColon));
+    ASSERT_EQUALS(
+        std::string("2058-02-20T18:29:11"),
+        dateToString(Date_t::fromMillisSinceEpoch(2781455351100LL), false, kTerseCurrentTimeColon));
 }
 
 TEST(TimeFormatting, DateAsTerseHyphens) {
-    ASSERT_EQUALS(std::string("1970-06-30T01-06-40"),
-                  dateToString(Date_t::fromMillisSinceEpoch(15556000981LL),
-                               false,
-                               Date_t::kTerseCurrentTimeHyphen));
+    ASSERT_EQUALS(
+        std::string("1970-06-30T01-06-40"),
+        dateToString(Date_t::fromMillisSinceEpoch(15556000981LL), false, kTerseCurrentTimeHyphen));
     ASSERT_EQUALS(std::string("2058-02-20T18-29-11"),
                   dateToString(Date_t::fromMillisSinceEpoch(2781455351100LL),
                                false,
-                               Date_t::kTerseCurrentTimeHyphen));
+                               kTerseCurrentTimeHyphen));
 }
 
 static std::string stringstreamDate(void (*formatter)(std::ostream&, Date_t), Date_t date) {

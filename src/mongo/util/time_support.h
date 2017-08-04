@@ -53,7 +53,6 @@ class StringBuilderImpl;
  */
 class Date_t {
 public:
-    static const std::string kISODateFormatUTC;
     static const std::string kISODateFormatLocal;
     static const std::string kCTimeFormat;
     static const std::string kCTimeFormatWithoutDayName;
@@ -242,6 +241,14 @@ private:
 
     long long millis = 0;
 };
+
+extern const char* kISODateFormatUTC;
+extern const char* kISODateFormatLocal;
+extern const char* kCTimeFormat;
+extern const char* kCTimeFormatWithoutDayName;
+extern const char* kTerseCurrentTimeColon;
+extern const char* kTerseCurrentTimeHyphen;
+extern const char* kTerseCurrentTimeHyphenUTC;
 
 /**
  * Formats the given 'date' according to the given 'format', either in UTC ('local' = false), or
