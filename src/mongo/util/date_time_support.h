@@ -303,6 +303,11 @@ public:
 private:
     std::unique_ptr<timelib_time, TimelibTimeDeleter> getTimelibTime(Date_t) const;
 
+    /**
+     * Only works with 1 <= spaces <= 4 and 0 <= number <= 9999. If spaces is less than the digit
+     * count of number we simply insert the number without padding. padChars is the pattern that is
+     * used for padding the number, and should be 4 characters long.
+     */
     template <typename OutputStream>
     void insertPaddedWithChars(OutputStream& os,
                                int number,

@@ -253,8 +253,6 @@ extern const char* kTerseCurrentTimeHyphenUTC;
 /**
  * Formats the given 'date' according to the given 'format', either in UTC ('local' = false), or
  * local time ('local' = true).
- *
- * This function is used by other methods that format a Date_t in specific formats.
  */
 std::string dateToString(Date_t date, bool local, std::string format);
 

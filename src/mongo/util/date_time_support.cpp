@@ -396,8 +396,7 @@ TimeZone::DateParts TimeZone::dateParts(Date_t date) const {
 
 std::string TimeZone::abbreviatedDayOfWeekName(Date_t date) const {
     std::vector<std::string> dayNames = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
-    auto time = getTimelibTime(date);
-    return dayNames[timelib_day_of_week(time->y, time->m, time->d)];
+    return dayNames[dayOfWeek(date) - 1];
 }
 
 std::string TimeZone::abbreviatedMonthName(int month) const {

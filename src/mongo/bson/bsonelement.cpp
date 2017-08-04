@@ -209,10 +209,7 @@ string BSONElement::jsonString(JsonStringFormat format, bool includeFieldNames, 
                 s << "{ \"$date\" : ";
                 // The two cases in which we cannot convert Date_t::millis to an ISO Date string are
                 // when the date is too large to format (SERVER-13760), and when the date is before
-                // 1902-01-01.  Since Date_t internally stores millis as an unsigned long long,
-                // despite the fact that it is logically signed (SERVER-8573), this check handles
-                // both the case where Date_t::millis is too large, and the case where
-                // Date_t::millis is too small (before the signed 32 bit integer range).
+                // 1902-01-01.
                 if (d.isFormattable()) {
                     s << "\"" << dateToISOStringLocal(date()) << "\"";
                 } else {
@@ -225,10 +222,7 @@ string BSONElement::jsonString(JsonStringFormat format, bool includeFieldNames, 
                     Date_t d = date();
                     // The two cases in which we cannot convert Date_t::millis to an ISO Date string
                     // are when the date is too large to format (SERVER-13760), and when the date is
-                    // before 1902-01-01.  Since Date_t internally stores millis as an unsigned long
-                    // long, despite the fact that it is logically signed (SERVER-8573), this check
-                    // handles both the case where Date_t::millis is too large, and the case where
-                    // Date_t::millis is too small (before the signed 32 bit integer range).
+                    // before 1902-01-01.
                     if (d.isFormattable()) {
                         s << "\"" << dateToISOStringLocal(date()) << "\"";
                     } else {
