@@ -1177,7 +1177,7 @@ Value ExpressionDateFromParts::serialize(bool explain) const {
 }
 
 /**
- * This function checks whether a field is a number, and fits in the given range.
+ * This function checks whether a field is a number.
  *
  * If the field does not exist, the default value is returned trough the returnValue out parameter
  * and the function returns true.
@@ -1186,17 +1186,14 @@ Value ExpressionDateFromParts::serialize(bool explain) const {
  * - if the value is "nullish", the function returns false, so that the calling function can return
  *   a BSONNULL value.
  * - if the value can not be coerced to an integral value, an exception is returned.
- * - if the value is out of the range [minValue..maxValue], an exception is returned.
  * - otherwise, the coerced integral value is returned through the returnValue
  *   out parameter, and the function returns true.
  */
 bool ExpressionDateFromParts::evaluateNumberWithinRange(const Document& root,
                                                         intrusive_ptr<Expression> field,
                                                         StringData fieldName,
-                                                        int defaultValue,
-                                                        int minValue,
-                                                        int maxValue,
-                                                        int* returnValue) const {
+                                                        long long defaultValue,
+                                                        long long* returnValue) const {
     if (!field) {
         *returnValue = defaultValue;
         return true;
@@ -1213,30 +1210,20 @@ bool ExpressionDateFromParts::evaluateNumberWithinRange(const Document& root,
                           << typeName(fieldValue.getType())
                           << " with value "
                           << fieldValue.toString(),
-            fieldValue.integral());
+            fieldValue.integral64Bit());
 
-    *returnValue = fieldValue.coerceToInt();
-
-    uassert(40523,
-            str::stream() << "'" << fieldName << "' must evaluate to an integer in the range "
-                          << minValue
-                          << " to "
-                          << maxValue
-                          << ", found "
-                          << *returnValue,
-            *returnValue >= minValue && *returnValue <= maxValue);
+    *returnValue = fieldValue.coerceToLong();
 
     return true;
 }
 
 Value ExpressionDateFromParts::evaluate(const Document& root) const {
-    int hour, minute, second, milliseconds;
+    long long hour, minute, second, milliseconds;
 
-    if (!evaluateNumberWithinRange(root, _hour, "hour"_sd, 0, 0, 24, &hour) ||
-        !evaluateNumberWithinRange(root, _minute, "minute"_sd, 0, 0, 59, &minute) ||
-        !evaluateNumberWithinRange(root, _second, "second"_sd, 0, 0, 59, &second) ||
-        !evaluateNumberWithinRange(
-            root, _milliseconds, "milliseconds"_sd, 0, 0, 999, &milliseconds)) {
+    if (!evaluateNumberWithinRange(root, _hour, "hour"_sd, 0, &hour) ||
+        !evaluateNumberWithinRange(root, _minute, "minute"_sd, 0, &minute) ||
+        !evaluateNumberWithinRange(root, _second, "second"_sd, 0, &second) ||
+        !evaluateNumberWithinRange(root, _milliseconds, "milliseconds"_sd, 0, &milliseconds)) {
         return Value(BSONNULL);
     }
 
@@ -1248,26 +1235,31 @@ Value ExpressionDateFromParts::evaluate(const Document& root) const {
     }
 
     if (_year) {
-        int year, month, day;
+        long long year, month, day;
 
-        if (!evaluateNumberWithinRange(root, _year, "year"_sd, 1970, 0, 9999, &year) ||
-            !evaluateNumberWithinRange(root, _month, "month"_sd, 1, 1, 12, &month) ||
-            !evaluateNumberWithinRange(root, _day, "day"_sd, 1, 1, 31, &day)) {
+        if (!evaluateNumberWithinRange(root, _year, "year"_sd, 1970, &year) ||
+            !evaluateNumberWithinRange(root, _month, "month"_sd, 1, &month) ||
+            !evaluateNumberWithinRange(root, _day, "day"_sd, 1, &day)) {
             return Value(BSONNULL);
         }
+
+        uassert(40523,
+                str::stream() << "'year' must evaluate to an integer in the range " << 0 << " to "
+                              << 9999
+                              << ", found "
+                              << year,
+                year >= 0 && year <= 9999);
 
         return Value(
             timeZone->createFromDateParts(year, month, day, hour, minute, second, milliseconds));
     }
 
     if (_isoYear) {
-        int isoYear, isoWeekYear, isoDayOfWeek;
+        long long isoYear, isoWeekYear, isoDayOfWeek;
 
-        if (!evaluateNumberWithinRange(root, _isoYear, "isoYear"_sd, 1970, 0, 9999, &isoYear) ||
-            !evaluateNumberWithinRange(
-                root, _isoWeekYear, "isoWeekYear"_sd, 1, 1, 53, &isoWeekYear) ||
-            !evaluateNumberWithinRange(
-                root, _isoDayOfWeek, "isoDayOfWeek"_sd, 1, 1, 7, &isoDayOfWeek)) {
+        if (!evaluateNumberWithinRange(root, _isoYear, "isoYear"_sd, 1970, &isoYear) ||
+            !evaluateNumberWithinRange(root, _isoWeekYear, "isoWeekYear"_sd, 1, &isoWeekYear) ||
+            !evaluateNumberWithinRange(root, _isoDayOfWeek, "isoDayOfWeek"_sd, 1, &isoDayOfWeek)) {
             return Value(BSONNULL);
         }
 
@@ -1523,22 +1515,22 @@ Value ExpressionDateToParts::evaluate(const Document& root) const {
 
     if (*iso8601) {
         auto parts = timeZone->dateIso8601Parts(dateValue);
-        return Value(Document{{"isoYear", parts.year},
-                              {"isoWeekYear", parts.weekOfYear},
-                              {"isoDayOfWeek", parts.dayOfWeek},
-                              {"hour", parts.hour},
-                              {"minute", parts.minute},
-                              {"second", parts.second},
-                              {"millisecond", parts.millisecond}});
+        return Value(Document{{"isoYear", static_cast<int>(parts.year)},
+                              {"isoWeekYear", static_cast<int>(parts.weekOfYear)},
+                              {"isoDayOfWeek", static_cast<int>(parts.dayOfWeek)},
+                              {"hour", static_cast<int>(parts.hour)},
+                              {"minute", static_cast<int>(parts.minute)},
+                              {"second", static_cast<int>(parts.second)},
+                              {"millisecond", static_cast<int>(parts.millisecond)}});
     } else {
         auto parts = timeZone->dateParts(dateValue);
-        return Value(Document{{"year", parts.year},
-                              {"month", parts.month},
-                              {"day", parts.dayOfMonth},
-                              {"hour", parts.hour},
-                              {"minute", parts.minute},
-                              {"second", parts.second},
-                              {"millisecond", parts.millisecond}});
+        return Value(Document{{"year", static_cast<int>(parts.year)},
+                              {"month", static_cast<int>(parts.month)},
+                              {"day", static_cast<int>(parts.dayOfMonth)},
+                              {"hour", static_cast<int>(parts.hour)},
+                              {"minute", static_cast<int>(parts.minute)},
+                              {"second", static_cast<int>(parts.second)},
+                              {"millisecond", static_cast<int>(parts.millisecond)}});
     }
 }
 

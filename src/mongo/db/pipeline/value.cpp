@@ -1028,6 +1028,28 @@ bool Value::integral() const {
     }
 }
 
+bool Value::integral64Bit() const {
+    switch (getType()) {
+        case NumberInt:
+            return true;
+        case NumberLong:
+            return true;
+        case NumberDouble:
+            return (_storage.doubleValue <= numeric_limits<long long>::max() &&
+                    _storage.doubleValue >= numeric_limits<long long>::min() &&
+                    _storage.doubleValue == static_cast<long long>(_storage.doubleValue));
+        case NumberDecimal: {
+            // If we are able to convert the decimal to an int64_t without an rounding errors,
+            // then it is a 64-bit.
+            uint32_t signalingFlags = Decimal128::kNoFlag;
+            (void)_storage.getDecimal().toLongExact(&signalingFlags);
+            return signalingFlags == Decimal128::kNoFlag;
+        }
+        default:
+            return false;
+    }
+}
+
 size_t Value::getApproximateSize() const {
     switch (getType()) {
         case Code:

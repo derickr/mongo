@@ -293,8 +293,13 @@ void TimeZone::adjustTimeZone(timelib_time* timelibTime) const {
     timelib_update_from_sse(timelibTime);
 }
 
-Date_t TimeZone::createFromDateParts(
-    int year, int month, int day, int hour, int minute, int second, int millisecond) const {
+Date_t TimeZone::createFromDateParts(long long year,
+                                     long long month,
+                                     long long day,
+                                     long long hour,
+                                     long long minute,
+                                     long long second,
+                                     long long millisecond) const {
     std::unique_ptr<timelib_time, TimeZone::TimelibTimeDeleter> newTime(timelib_time_ctor());
 
     newTime->y = year;
@@ -313,13 +318,13 @@ Date_t TimeZone::createFromDateParts(
     return returnValue;
 }
 
-Date_t TimeZone::createFromIso8601DateParts(int isoYear,
-                                            int isoWeekYear,
-                                            int isoDayOfWeek,
-                                            int hour,
-                                            int minute,
-                                            int second,
-                                            int millisecond) const {
+Date_t TimeZone::createFromIso8601DateParts(long long isoYear,
+                                            long long isoWeekYear,
+                                            long long isoDayOfWeek,
+                                            long long hour,
+                                            long long minute,
+                                            long long second,
+                                            long long millisecond) const {
     std::unique_ptr<timelib_time, TimeZone::TimelibTimeDeleter> newTime(timelib_time_ctor());
 
     timelib_date_from_isodate(

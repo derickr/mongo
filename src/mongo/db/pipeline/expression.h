@@ -882,10 +882,8 @@ private:
     bool evaluateNumberWithinRange(const Document& root,
                                    boost::intrusive_ptr<Expression> field,
                                    StringData fieldName,
-                                   int defaultValue,
-                                   int minValue,
-                                   int maxValue,
-                                   int* returnValue) const;
+                                   long long defaultValue,
+                                   long long* returnValue) const;
 
     boost::intrusive_ptr<Expression> _year;
     boost::intrusive_ptr<Expression> _month;
@@ -957,7 +955,7 @@ public:
         : DateExpressionAcceptingTimeZone<ExpressionDayOfMonth>("$dayOfMonth", expCtx) {}
 
     Value evaluateDate(Date_t date, const TimeZone& timeZone) const final {
-        return Value(timeZone.dateParts(date).dayOfMonth);
+        return Value(static_cast<int>(timeZone.dateParts(date).dayOfMonth));
     }
 };
 
@@ -1114,7 +1112,7 @@ public:
         : DateExpressionAcceptingTimeZone<ExpressionHour>("$hour", expCtx) {}
 
     Value evaluateDate(Date_t date, const TimeZone& timeZone) const final {
-        return Value(timeZone.dateParts(date).hour);
+        return Value(static_cast<int>(timeZone.dateParts(date).hour));
     }
 };
 
@@ -1288,7 +1286,7 @@ public:
         : DateExpressionAcceptingTimeZone<ExpressionMillisecond>("$millisecond", expCtx) {}
 
     Value evaluateDate(Date_t date, const TimeZone& timeZone) const final {
-        return Value(timeZone.dateParts(date).millisecond);
+        return Value(static_cast<int>(timeZone.dateParts(date).millisecond));
     }
 };
 
@@ -1299,7 +1297,7 @@ public:
         : DateExpressionAcceptingTimeZone<ExpressionMinute>("$minute", expCtx) {}
 
     Value evaluateDate(Date_t date, const TimeZone& timeZone) const final {
-        return Value(timeZone.dateParts(date).minute);
+        return Value(static_cast<int>(timeZone.dateParts(date).minute));
     }
 };
 
@@ -1338,7 +1336,7 @@ public:
         : DateExpressionAcceptingTimeZone<ExpressionMonth>("$month", expCtx) {}
 
     Value evaluateDate(Date_t date, const TimeZone& timeZone) const final {
-        return Value(timeZone.dateParts(date).month);
+        return Value(static_cast<int>(timeZone.dateParts(date).month));
     }
 };
 
@@ -1474,7 +1472,7 @@ public:
         : DateExpressionAcceptingTimeZone<ExpressionSecond>("$second", expCtx) {}
 
     Value evaluateDate(Date_t date, const TimeZone& timeZone) const final {
-        return Value(timeZone.dateParts(date).second);
+        return Value(static_cast<int>(timeZone.dateParts(date).second));
     }
 };
 
@@ -1785,7 +1783,7 @@ public:
         : DateExpressionAcceptingTimeZone<ExpressionYear>("$year", expCtx) {}
 
     Value evaluateDate(Date_t date, const TimeZone& timeZone) const final {
-        return Value(timeZone.dateParts(date).year);
+        return Value(static_cast<int>(timeZone.dateParts(date).year));
     }
 };
 
