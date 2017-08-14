@@ -146,15 +146,15 @@ public:
     }
 
     /**
-     * Returns abbreviated name of the day of week (i.e.: Sun, Sat, etc.).
+     * Returns abbreviated name of the day of week (Sun, Sat, etc.).
      */
-    std::string abbreviatedDayOfWeekName(Date_t) const;
+    const std::string abbreviatedDayOfWeekName(Date_t) const;
 
     /**
-     * Returns abbreviated name of the month (i.e.: Jan, Oct, etc.). The input month is 1 based (for
-     * January).
+     * Returns abbreviated name of the month (Jan, Oct, etc.). 'month' is 1 based, using 1 for
+     * January.
      */
-    std::string abbreviatedMonthName(int month) const;
+    const std::string abbreviatedMonthName(int month) const;
 
     /**
      * Returns the weekday number, ranging from 1 (for Sunday) to 7 (for Saturday).
@@ -304,9 +304,9 @@ private:
     std::unique_ptr<timelib_time, TimelibTimeDeleter> getTimelibTime(Date_t) const;
 
     /**
-     * Only works with 1 <= spaces <= 4 and 0 <= number <= 9999. If spaces is less than the digit
-     * count of number we simply insert the number without padding. padChars is the pattern that is
-     * used for padding the number, and should be 4 characters long.
+     * Only works with 1 <= 'width' <= 4 and 0 <= 'number' <= 9999. If 'width' is less than the
+     * digit count of 'number' we simply insert the number without padding. 'padChars' is the
+     * pattern that is used for padding the number, and should be 4 characters long.
      */
     template <typename OutputStream>
     void insertPaddedWithChars(OutputStream& os,
@@ -335,8 +335,8 @@ private:
     }
 
     /**
-     * Only works with 1 <= spaces <= 4 and 0 <= number <= 9999. If spaces is less than the digit
-     * count of number we simply insert the number without padding.
+     * Only works with 1 <= 'width' <= 4 and 0 <= 'number' <= 9999. If 'width' is less than the
+     * digit count of number we simply insert the number without padding.
      */
     template <typename OutputStream>
     void insertPadded(OutputStream& os, int number, int width) const {

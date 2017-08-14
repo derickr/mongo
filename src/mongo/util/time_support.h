@@ -257,7 +257,7 @@ extern const char* kTerseCurrentTimeHyphenUTC;
 std::string dateToString(Date_t date, bool local, std::string format);
 
 /**
- * Formats "time" in fixed width in the local time zone, without the day name.
+ * Formats 'time' in fixed width in the local time zone, without the day name.
  *
  * Sample format: "Oct 31 13:34:47.996"
  */
@@ -266,7 +266,7 @@ std::string time_t_to_String_short(time_t time);
 /**
  * Produces a short UTC date + time appropriate for file names without Z appended.
  *
- * colonsOk should be false when creating filenames, in which case the colons in the time are
+ * 'colonsOk' should be false when creating filenames, in which case the colons in the time are
  * replaced by hyphens.
  *
  * Sample formats:
@@ -281,7 +281,7 @@ std::string terseCurrentTime(bool colonsOk = true);
 std::string terseUTCCurrentTime();
 
 /**
- * Formats "date" according to the ISO 8601 extended form standard, including date,
+ * Formats 'date' according to the ISO 8601 extended form standard, including date,
  * and time with milliseconds decimal component, in the UTC timezone.
  *
  * Sample format: "2013-07-23T18:42:14.072Z"
@@ -289,7 +289,7 @@ std::string terseUTCCurrentTime();
 std::string dateToISOStringUTC(Date_t date);
 
 /**
- * Formats "date" according to the ISO 8601 extended form standard, including date,
+ * Formats 'date' according to the ISO 8601 extended form standard, including date,
  * and time with milliseconds decimal component, in the local timezone.
  *
  * Sample format: "2013-07-23T18:42:14.072-05:00"
@@ -297,7 +297,7 @@ std::string dateToISOStringUTC(Date_t date);
 std::string dateToISOStringLocal(Date_t date);
 
 /**
- * Formats "date" in fixed width in the local time zone.
+ * Formats 'date' in fixed width in the local time zone.
  *
  * Sample format: "Wed Oct 31 13:34:47.996"
  */

@@ -124,9 +124,7 @@ const char* kTerseCurrentTimeHyphen = "%Y-%m-%dT%H-%M-%S";
 const char* kTerseCurrentTimeHyphenUTC = "%Y-%m-%dT%H-%M-%SZ";
 
 string time_t_to_String_short(time_t time) {
-    Date_t date = Date_t::fromTimeT(time);
-
-    return dateToString(date, true, kCTimeFormatWithoutDayName);
+    return dateToString(Date_t::fromTimeT(time), true, kCTimeFormatWithoutDayName);
 }
 
 // uses ISO 8601 dates without trailing Z

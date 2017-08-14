@@ -394,12 +394,12 @@ TimeZone::DateParts TimeZone::dateParts(Date_t date) const {
     return DateParts(*time, date);
 }
 
-std::string TimeZone::abbreviatedDayOfWeekName(Date_t date) const {
+const std::string TimeZone::abbreviatedDayOfWeekName(Date_t date) const {
     std::vector<std::string> dayNames = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
     return dayNames[dayOfWeek(date) - 1];
 }
 
-std::string TimeZone::abbreviatedMonthName(int month) const {
+const std::string TimeZone::abbreviatedMonthName(int month) const {
     std::vector<std::string> monthNames = {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     return monthNames[month - 1];
