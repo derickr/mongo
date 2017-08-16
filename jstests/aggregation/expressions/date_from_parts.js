@@ -539,6 +539,35 @@ load("jstests/aggregation/extras/utils.js");  // For assertErrorCode
     });
 
     /* --------------------------------------------------------------------------------------- */
+    /* Testing double and Decimal128 range */
+
+    coll.drop();
+
+    assert.writeOK(coll.insert([{
+        _id: 0,
+        veryBigDoubleA: 18014398509481984.0,
+        veryBigDecimal128A: NumberDecimal("9223372036854775807"),  // 2^63-1
+        veryBigDoubleB: 18014398509481984000.0,
+        veryBigDecimal128B: NumberDecimal("9223372036854775807000"),  // 2^63 * 1000
+    }]));
+
+    pipeline =
+        [{$project: {date: {"$dateFromParts": {year: 1970, milliseconds: "$veryBigDoubleA"}}}}];
+    assertErrorCode(coll, pipeline, 159, tojson(pipeline));
+
+    pipeline =
+        [{$project: {date: {"$dateFromParts": {year: 1970, milliseconds: "$veryBigDecimal128A"}}}}];
+    assertErrorCode(coll, pipeline, 159, tojson(pipeline));
+
+    pipeline =
+        [{$project: {date: {"$dateFromParts": {year: 1970, milliseconds: "$veryBigDoubleB"}}}}];
+    assertErrorCode(coll, pipeline, 40515, tojson(pipeline));
+
+    pipeline =
+        [{$project: {date: {"$dateFromParts": {year: 1970, milliseconds: "$veryBigDecimal128B"}}}}];
+    assertErrorCode(coll, pipeline, 40515, tojson(pipeline));
+
+    /* --------------------------------------------------------------------------------------- */
     /* Testing wrong arguments */
 
     coll.drop();

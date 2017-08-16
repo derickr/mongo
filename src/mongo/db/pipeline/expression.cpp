@@ -1515,22 +1515,22 @@ Value ExpressionDateToParts::evaluate(const Document& root) const {
 
     if (*iso8601) {
         auto parts = timeZone->dateIso8601Parts(dateValue);
-        return Value(Document{{"isoYear", static_cast<int>(parts.year)},
-                              {"isoWeekYear", static_cast<int>(parts.weekOfYear)},
-                              {"isoDayOfWeek", static_cast<int>(parts.dayOfWeek)},
-                              {"hour", static_cast<int>(parts.hour)},
-                              {"minute", static_cast<int>(parts.minute)},
-                              {"second", static_cast<int>(parts.second)},
-                              {"millisecond", static_cast<int>(parts.millisecond)}});
+        return Value(Document{{"isoYear", parts.year},
+                              {"isoWeekYear", parts.weekOfYear},
+                              {"isoDayOfWeek", parts.dayOfWeek},
+                              {"hour", parts.hour},
+                              {"minute", parts.minute},
+                              {"second", parts.second},
+                              {"millisecond", parts.millisecond}});
     } else {
         auto parts = timeZone->dateParts(dateValue);
-        return Value(Document{{"year", static_cast<int>(parts.year)},
-                              {"month", static_cast<int>(parts.month)},
-                              {"day", static_cast<int>(parts.dayOfMonth)},
-                              {"hour", static_cast<int>(parts.hour)},
-                              {"minute", static_cast<int>(parts.minute)},
-                              {"second", static_cast<int>(parts.second)},
-                              {"millisecond", static_cast<int>(parts.millisecond)}});
+        return Value(Document{{"year", parts.year},
+                              {"month", parts.month},
+                              {"day", parts.dayOfMonth},
+                              {"hour", parts.hour},
+                              {"minute", parts.minute},
+                              {"second", parts.second},
+                              {"millisecond", parts.millisecond}});
     }
 }
 

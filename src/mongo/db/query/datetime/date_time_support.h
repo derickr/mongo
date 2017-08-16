@@ -57,13 +57,13 @@ public:
     struct DateParts {
         DateParts(const timelib_time&, Date_t);
 
-        long long year;
-        long long month;
-        long long dayOfMonth;
-        long long hour;
-        long long minute;
-        long long second;
-        long long millisecond;
+        int year;
+        int month;
+        int dayOfMonth;
+        int hour;
+        int minute;
+        int second;
+        int millisecond;
     };
 
     /**
@@ -72,13 +72,13 @@ public:
     struct Iso8601DateParts {
         Iso8601DateParts(const timelib_time&, Date_t);
 
-        long long year;
-        long long weekOfYear;
-        long long dayOfWeek;
-        long long hour;
-        long long minute;
-        long long second;
-        long long millisecond;
+        int year;
+        int weekOfYear;
+        int dayOfWeek;
+        int hour;
+        int minute;
+        int second;
+        int millisecond;
     };
 
     /**
