@@ -482,7 +482,7 @@ load("jstests/aggregation/extras/utils.js");  // For assertErrorCode
     }]));
 
     tests = [
-        {expected: "0000-01-01T00:00:00.000Z", parts: {year: "$zero"}},
+        // {expected: "0000-01-01T00:00:00.000Z", parts: {year: "$zero"}}, // depends on SERVER-8164
         {expected: "9999-01-01T00:00:00.000Z", parts: {year: "$tenThousandMinusOne"}},
         {expected: "2016-11-01T00:00:00.000Z", parts: {year: 2017, month: "$minusOne"}},
         {expected: "2016-12-01T00:00:00.000Z", parts: {year: 2017, month: "$zero"}},
