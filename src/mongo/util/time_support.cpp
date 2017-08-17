@@ -130,8 +130,10 @@ string time_t_to_String_short(time_t time) {
 // uses ISO 8601 dates without trailing Z
 // colonsOk should be false when creating filenames
 string terseCurrentTime(bool colonsOk) {
-    return dateToString(
-        Date_t::now(), false, colonsOk ? Date_t::kTerseCurrentTimeColon : Date_t::kTerseCurrentTimeHyphen);
+    return dateToString(Date_t::now(),
+                        false,
+                        colonsOk ? Date_t::kTerseCurrentTimeColon
+                                 : Date_t::kTerseCurrentTimeHyphen);
 }
 
 string terseUTCCurrentTime() {
