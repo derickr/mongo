@@ -52,6 +52,14 @@
 
 namespace mongo {
 
+constexpr StringData Date_t::kISODateFormatUTC;
+constexpr StringData Date_t::kISODateFormatLocal;
+constexpr StringData Date_t::kCTimeFormat;
+constexpr StringData Date_t::kCTimeFormatWithoutDayName;
+constexpr StringData Date_t::kTerseCurrentTimeColon;
+constexpr StringData Date_t::kTerseCurrentTimeHyphen;
+constexpr StringData Date_t::kTerseCurrentTimeHyphenUTC;
+
 Date_t Date_t::now() {
     return fromMillisSinceEpoch(curTimeMillis64());
 }
@@ -81,7 +89,7 @@ thread_local long long jsTime_virtual_thread_skew = 0;
 
 using std::string;
 
-string dateToString(Date_t date, bool local, string format) {
+string dateToString(Date_t date, bool local, const StringData format) {
     invariant(date.isFormattable());
 
     if (local) {
@@ -115,51 +123,43 @@ string dateToString(Date_t date, bool local, string format) {
     }
 }
 
-const char* kISODateFormatUTC = "%Y-%m-%dT%H:%M:%S.%LZ";
-const char* kISODateFormatLocal = "%Y-%m-%dT%H:%M:%S.%L%z";
-const char* kCTimeFormat = "%a %b %e %H:%M:%S.%L";
-const char* kCTimeFormatWithoutDayName = "%b %e %H:%M:%S.%L";
-const char* kTerseCurrentTimeColon = "%Y-%m-%dT%H:%M:%S";
-const char* kTerseCurrentTimeHyphen = "%Y-%m-%dT%H-%M-%S";
-const char* kTerseCurrentTimeHyphenUTC = "%Y-%m-%dT%H-%M-%SZ";
-
 string time_t_to_String_short(time_t time) {
-    return dateToString(Date_t::fromTimeT(time), true, kCTimeFormatWithoutDayName);
+    return dateToString(Date_t::fromTimeT(time), true, Date_t::kCTimeFormatWithoutDayName);
 }
 
 // uses ISO 8601 dates without trailing Z
 // colonsOk should be false when creating filenames
 string terseCurrentTime(bool colonsOk) {
     return dateToString(
-        Date_t::now(), false, colonsOk ? kTerseCurrentTimeColon : kTerseCurrentTimeHyphen);
+        Date_t::now(), false, colonsOk ? Date_t::kTerseCurrentTimeColon : Date_t::kTerseCurrentTimeHyphen);
 }
 
 string terseUTCCurrentTime() {
-    return dateToString(Date_t::now(), false, kTerseCurrentTimeHyphenUTC);
+    return dateToString(Date_t::now(), false, Date_t::kTerseCurrentTimeHyphenUTC);
 }
 
 string dateToISOStringUTC(Date_t date) {
-    return dateToString(date, false, kISODateFormatUTC);
+    return dateToString(date, false, Date_t::kISODateFormatUTC);
 }
 
 string dateToISOStringLocal(Date_t date) {
-    return dateToString(date, true, kISODateFormatLocal);
+    return dateToString(date, true, Date_t::kISODateFormatLocal);
 }
 
 string dateToCtimeString(Date_t date) {
-    return dateToString(date, true, kCTimeFormat);
+    return dateToString(date, true, Date_t::kCTimeFormat);
 }
 
 void outputDateAsISOStringUTC(std::ostream& os, Date_t date) {
-    os << dateToString(date, false, kISODateFormatUTC);
+    os << dateToString(date, false, Date_t::kISODateFormatUTC);
 }
 
 void outputDateAsISOStringLocal(std::ostream& os, Date_t date) {
-    os << dateToString(date, true, kISODateFormatLocal);
+    os << dateToString(date, true, Date_t::kISODateFormatLocal);
 }
 
 void outputDateAsCtime(std::ostream& os, Date_t date) {
-    os << dateToString(date, true, kCTimeFormat);
+    os << dateToString(date, true, Date_t::kCTimeFormat);
 }
 
 static timelib_tzinfo* fromisostring_gettzinfowrapper(char* tz_id,

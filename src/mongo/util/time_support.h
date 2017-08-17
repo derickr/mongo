@@ -53,12 +53,13 @@ class StringBuilderImpl;
  */
 class Date_t {
 public:
-    static const std::string kISODateFormatLocal;
-    static const std::string kCTimeFormat;
-    static const std::string kCTimeFormatWithoutDayName;
-    static const std::string kTerseCurrentTimeColon;
-    static const std::string kTerseCurrentTimeHyphen;
-    static const std::string kTerseCurrentTimeHyphenUTC;
+    static constexpr StringData kISODateFormatUTC = "%Y-%m-%dT%H:%M:%S.%LZ"_sd;
+    static constexpr StringData kISODateFormatLocal = "%Y-%m-%dT%H:%M:%S.%L%z"_sd;
+    static constexpr StringData kCTimeFormat = "%a %b %e %H:%M:%S.%L"_sd;
+    static constexpr StringData kCTimeFormatWithoutDayName = "%b %e %H:%M:%S.%L"_sd;
+    static constexpr StringData kTerseCurrentTimeColon = "%Y-%m-%dT%H:%M:%S"_sd;
+    static constexpr StringData kTerseCurrentTimeHyphen = "%Y-%m-%dT%H-%M-%S"_sd;
+    static constexpr StringData kTerseCurrentTimeHyphenUTC = "%Y-%m-%dT%H-%M-%SZ"_sd;
 
     /**
      * The largest representable Date_t.
@@ -242,19 +243,11 @@ private:
     long long millis = 0;
 };
 
-extern const char* kISODateFormatUTC;
-extern const char* kISODateFormatLocal;
-extern const char* kCTimeFormat;
-extern const char* kCTimeFormatWithoutDayName;
-extern const char* kTerseCurrentTimeColon;
-extern const char* kTerseCurrentTimeHyphen;
-extern const char* kTerseCurrentTimeHyphenUTC;
-
 /**
  * Formats the given 'date' according to the given 'format', either in UTC ('local' = false), or
  * local time ('local' = true).
  */
-std::string dateToString(Date_t date, bool local, std::string format);
+std::string dateToString(Date_t date, bool local, const StringData format);
 
 /**
  * Formats 'time' in fixed width in the local time zone, without the day name.
