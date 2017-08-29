@@ -457,32 +457,32 @@ public:
         BSONObjBuilder b1;
         b1.appendDate("a", Date_t());
         BSONObj built1 = b1.done();
-        ASSERT_EQUALS("{ \"a\" : { \"$date\" : \"1969-12-31T19:00:00.000-0500\" } }",
+        ASSERT_EQUALS(R"({ "a" : { "$date" : "1969-12-31T19:00:00.000-0500" } })",
                       built1.jsonString(Strict));
-        ASSERT_EQUALS("{ \"a\" : Date( 0 ) }", built1.jsonString(TenGen));
+        ASSERT_EQUALS(R"({ "a" : Date( 0 ) })", built1.jsonString(TenGen));
 
         // Test dates above our maximum formattable date.  See SERVER-13760.
         BSONObjBuilder b2;
         b2.appendDate("a", Date_t::fromMillisSinceEpoch(32535262800000LL));
         BSONObj built2 = b2.done();
-        ASSERT_EQUALS("{ \"a\" : { \"$date\" : { \"$numberLong\" : \"32535262800000\" } } }",
+        ASSERT_EQUALS(R"({ "a" : { "$date" : { "$numberLong" : "32535262800000" } } })",
                       built2.jsonString(Strict));
 
         // Test dates before our minimal formattable date (1902-01-01T00:00:00Z).
         BSONObjBuilder b3;
         b3.appendDate("a", Date_t::fromMillisSinceEpoch(-2145916800001LL));
         BSONObj built3 = b3.done();
-        ASSERT_EQUALS("{ \"a\" : { \"$date\" : { \"$numberLong\" : \"-2145916800001\" } } }",
+        ASSERT_EQUALS(R"({ "a" : { "$date" : { "$numberLong" : "-2145916800001" } } })",
                       built3.jsonString(Strict));
-        ASSERT_EQUALS("{ \"a\" : Date( -2145916800001 ) }", built3.jsonString(TenGen));
+        ASSERT_EQUALS(R"({ "a" : Date( -2145916800001 ) })", built3.jsonString(TenGen));
 
         // Test date just before the Epoch (1969-12-31T18:59:59.999-0500).
         BSONObjBuilder b4;
         b4.appendDate("a", Date_t::fromMillisSinceEpoch(-1));
         BSONObj built4 = b4.done();
-        ASSERT_EQUALS("{ \"a\" : { \"$date\" : \"1969-12-31T18:59:59.999-0500\" } }",
+        ASSERT_EQUALS(R"({ "a" : { "$date" : "1969-12-31T18:59:59.999-0500" } })",
                       built4.jsonString(Strict));
-        ASSERT_EQUALS("{ \"a\" : Date( -1 ) }", built4.jsonString(TenGen));
+        ASSERT_EQUALS(R"({ "a" : Date( -1 ) })", built4.jsonString(TenGen));
     }
 
 private:
@@ -1722,6 +1722,7 @@ class DateNegative : public Base {
 class DateMinRange : public Base {
     virtual BSONObj bson() const {
         BSONObjBuilder b;
+        // -2145916800000 == 0000-01-01T00:00:00Z
         b.appendDate("a", Date_t::fromMillisSinceEpoch(-2145916800000LL));
         return b.obj();
     }
@@ -1733,6 +1734,7 @@ class DateMinRange : public Base {
 class DateMaxRange32Bit : public Base {
     virtual BSONObj bson() const {
         BSONObjBuilder b;
+        // 2147483647000 == (2^31 - 1) * 1000
         b.appendDate("a", Date_t::fromMillisSinceEpoch(2147483647000));
         return b.obj();
     }
@@ -1744,6 +1746,7 @@ class DateMaxRange32Bit : public Base {
 class DateMaxRange64Bit : public Base {
     virtual BSONObj bson() const {
         BSONObjBuilder b;
+        // 32535215999000 == 3000-12-31T23:59:59Z
         b.appendDate("a", Date_t::fromMillisSinceEpoch(32535215999000));
         return b.obj();
     }

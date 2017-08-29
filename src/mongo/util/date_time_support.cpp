@@ -47,6 +47,21 @@
 namespace mongo {
 
 namespace {
+constexpr std::array<StringData, 8> kDayNames = {
+    "Sun"_sd, "Mon"_sd, "Tue"_sd, "Wed"_sd, "Thu"_sd, "Fri"_sd, "Sat"_sd, "Sun"_sd};
+constexpr std::array<StringData, 12> kMonthNames = {"Jan"_sd,
+                                                    "Feb"_sd,
+                                                    "Mar"_sd,
+                                                    "Apr"_sd,
+                                                    "May"_sd,
+                                                    "Jun"_sd,
+                                                    "Jul"_sd,
+                                                    "Aug"_sd,
+                                                    "Sep"_sd,
+                                                    "Oct"_sd,
+                                                    "Nov"_sd,
+                                                    "Dec"_sd};
+
 // Converts a date to a number of seconds, being careful to round appropriately for negative numbers
 // of seconds.
 long long seconds(Date_t date) {
@@ -394,15 +409,12 @@ TimeZone::DateParts TimeZone::dateParts(Date_t date) const {
     return DateParts(*time, date);
 }
 
-const std::string TimeZone::abbreviatedDayOfWeekName(Date_t date) const {
-    std::vector<std::string> dayNames = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
-    return dayNames[dayOfWeek(date) - 1];
+std::string TimeZone::abbreviatedDayOfWeekName(Date_t date) const {
+    return kDayNames[dayOfWeek(date) - 1].toString();
 }
 
-const std::string TimeZone::abbreviatedMonthName(int month) const {
-    std::vector<std::string> monthNames = {
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-    return monthNames[month - 1];
+std::string TimeZone::abbreviatedMonthName(int month) const {
+    return kMonthNames[month - 1].toString();
 }
 
 int TimeZone::dayOfWeek(Date_t date) const {

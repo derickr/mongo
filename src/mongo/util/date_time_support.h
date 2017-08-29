@@ -309,10 +309,7 @@ private:
      * pattern that is used for padding the number, and should be 4 characters long.
      */
     template <typename OutputStream>
-    void insertPaddedWithChars(OutputStream& os,
-                               int number,
-                               int width,
-                               const char* padChars) const {
+    void insertPaddedWithChars(OutputStream& os, int number, int width, StringData padChars) const {
         invariant(width >= 1);
         invariant(width <= 4);
         invariant(number >= 0);
@@ -329,7 +326,7 @@ private:
         }
 
         if (width > digits) {
-            os.write(padChars, width - digits);
+            os.write(padChars.rawData(), width - digits);
         }
         os << number;
     }
@@ -340,7 +337,7 @@ private:
      */
     template <typename OutputStream>
     void insertPadded(OutputStream& os, int number, int width) const {
-        insertPaddedWithChars(os, number, width, "0000");
+        insertPaddedWithChars(os, number, width, "0000"_sd);
     }
 
     struct TimelibTZInfoDeleter {

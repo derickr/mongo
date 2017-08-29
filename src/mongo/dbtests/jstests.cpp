@@ -1735,6 +1735,7 @@ class DateNegative : public TestRoundTrip {
 class DateMinRange : public TestRoundTrip {
     virtual BSONObj bson() const {
         BSONObjBuilder b;
+        // -2145916800000 == 1902-01-01T00:00:00Z
         b.appendDate("a", Date_t::fromMillisSinceEpoch(-2145916800000LL));
         return b.obj();
     }
@@ -1746,6 +1747,7 @@ class DateMinRange : public TestRoundTrip {
 class DateMaxRange32Bit : public TestRoundTrip {
     virtual BSONObj bson() const {
         BSONObjBuilder b;
+        // 2147483647000 == (2^31 - 1) * 1000
         b.appendDate("a", Date_t::fromMillisSinceEpoch(2147483647000));
         return b.obj();
     }
@@ -1757,6 +1759,7 @@ class DateMaxRange32Bit : public TestRoundTrip {
 class DateMaxRange64Bit : public TestRoundTrip {
     virtual BSONObj bson() const {
         BSONObjBuilder b;
+        // 32535215999000 == 3000-12-31T23:59:59Z
         b.appendDate("a", Date_t::fromMillisSinceEpoch(32535215999000));
         return b.obj();
     }

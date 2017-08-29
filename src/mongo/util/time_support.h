@@ -247,7 +247,7 @@ private:
  * Formats the given 'date' according to the given 'format', either in UTC ('local' = false), or
  * local time ('local' = true).
  */
-std::string dateToString(Date_t date, bool local, const StringData format);
+std::string dateToString(Date_t date, bool local, StringData format);
 
 /**
  * Formats 'time' in fixed width in the local time zone, without the day name.
