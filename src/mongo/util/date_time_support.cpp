@@ -409,12 +409,12 @@ TimeZone::DateParts TimeZone::dateParts(Date_t date) const {
     return DateParts(*time, date);
 }
 
-std::string TimeZone::abbreviatedDayOfWeekName(Date_t date) const {
-    return kDayNames[dayOfWeek(date) - 1].toString();
+const StringData& TimeZone::abbreviatedDayOfWeekName(Date_t date) const {
+    return kDayNames[dayOfWeek(date) - 1];
 }
 
-std::string TimeZone::abbreviatedMonthName(int month) const {
-    return kMonthNames[month - 1].toString();
+const StringData& TimeZone::abbreviatedMonthName(int month) const {
+    return kMonthNames[month - 1];
 }
 
 int TimeZone::dayOfWeek(Date_t date) const {

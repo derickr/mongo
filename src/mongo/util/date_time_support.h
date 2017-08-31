@@ -148,13 +148,13 @@ public:
     /**
      * Returns abbreviated name of the day of week (Sun, Sat, etc.).
      */
-    const std::string abbreviatedDayOfWeekName(Date_t) const;
+    const StringData& abbreviatedDayOfWeekName(Date_t) const;
 
     /**
      * Returns abbreviated name of the month (Jan, Oct, etc.). 'month' is 1 based, using 1 for
      * January.
      */
-    const std::string abbreviatedMonthName(int month) const;
+    const StringData& abbreviatedMonthName(int month) const;
 
     /**
      * Returns the weekday number, ranging from 1 (for Sunday) to 7 (for Saturday).
