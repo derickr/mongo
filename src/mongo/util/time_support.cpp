@@ -165,7 +165,7 @@ void outputDateAsCtime(std::ostream& os, Date_t date) {
 }
 
 static timelib_tzinfo* fromisostring_gettzinfowrapper(char* tz_id,
-                                                      const _timelib_tzdb* db,
+                                                      const timelib_tzdb* db,
                                                       int* error) {
     return nullptr;
 }

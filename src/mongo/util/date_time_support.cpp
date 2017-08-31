@@ -131,7 +131,7 @@ TimeZone TimeZoneDatabase::utcZone() {
 }
 
 static timelib_tzinfo* timezonedatabase_gettzinfowrapper(char* tz_id,
-                                                         const _timelib_tzdb* db,
+                                                         const timelib_tzdb* db,
                                                          int* error) {
     return nullptr;
 }
